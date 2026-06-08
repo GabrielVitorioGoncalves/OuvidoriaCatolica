@@ -1,0 +1,6 @@
+@OuvidoriaCatolica.API_HostAddress = http://localhost:5277
+
+GET {{OuvidoriaCatolica.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
