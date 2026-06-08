@@ -138,6 +138,105 @@ Responsável pela gestão completa da plataforma.
 - Relatórios gerenciais.
  
 ---
+
+---
+
+## Entidades Principais 
+
+O sistema de Ouvidoria Institucional foi estruturado com entidades responsáveis por representar os principais elementos do negócio e garantir a organização das informações armazenadas.
+
+### Usuário
+
+Representa qualquer pessoa que utiliza o sistema, podendo atuar como solicitante, operador ou administrador.
+
+**Principais atributos:**
+- Id
+- Nome
+- E-mail
+- Senha
+- Perfil
+- Data de Cadastro
+- Status
+
+### Manifestação
+
+Representa uma solicitação, reclamação, sugestão, elogio ou denúncia registrada por um usuário.
+
+**Principais atributos:**
+- Id
+- Número de Protocolo
+- Título
+- Descrição
+- Data de Criação
+- Status
+- Usuário Responsável
+- Categoria
+
+### Categoria
+
+Responsável por classificar as manifestações registradas no sistema.
+
+**Principais atributos:**
+- Id
+- Nome
+- Descrição
+
+**Categorias disponíveis:**
+- Reclamação
+- Sugestão
+- Elogio
+- Denúncia
+- Solicitação
+- Outros
+
+### Resposta
+
+Armazena as respostas fornecidas pelos operadores ou administradores às manifestações cadastradas.
+
+**Principais atributos:**
+- Id
+- Manifestação
+- Usuário Responsável
+- Mensagem
+- Data da Resposta
+
+### Histórico de Movimentação
+
+Registra todas as alterações realizadas em uma manifestação durante o fluxo de atendimento, permitindo rastreabilidade completa das ações executadas.
+
+**Principais atributos:**
+- Id
+- Manifestação
+- Status Anterior
+- Novo Status
+- Data da Alteração
+- Usuário Responsável
+
+### Log de Auditoria
+
+Responsável pelo armazenamento dos registros de atividades executadas pelos usuários no sistema, contribuindo para a segurança e conformidade da plataforma.
+
+**Principais atributos:**
+- Id
+- Usuário
+- Ação Executada
+- Data e Hora
+- Endereço IP
+- Comentarios
+
+## Relacionamentos
+
+- Um usuário pode criar várias manifestações.
+- Cada manifestação pertence a uma única categoria.
+- Uma manifestação pode possuir várias respostas.
+- Uma manifestação pode possuir diversos registros de histórico de movimentação.
+- Um usuário pode gerar diversos registros de auditoria durante a utilização do sistema.
+
+Essas entidades compõem a base estrutural da aplicação, permitindo o gerenciamento eficiente das manifestações, o controle de acesso baseado em perfis e a rastreabilidade das operações realizadas na plataforma.
+
+-----
+
+
  
 ## 🎓 Projeto Acadêmico
  
