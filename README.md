@@ -236,8 +236,50 @@ Essas entidades compõem a base estrutural da aplicação, permitindo o gerencia
 
 -----
 
+## Ativos do sistema
 
- 
+**Dados:**
+
+- Dados pessoais de usuários
+- Credenciais de Usuários
+- Dados acadêmicos de usuários
+- Credenciais de administradores
+- Manifestações registradas
+- Respostas de ouvidorias registradas
+- Histórico de atendimento
+- Logs de auditoria
+- Logs de acesso
+- Sessão dos usuários
+- Configuração do sistema
+
+**Software:**
+
+- Aplicação fron-end
+- Componentes da interface via MaterialUI
+- API
+- Token JWT
+- Chave da API
+- Secrets
+- Variáveis de ambiente
+- Perfis/permissões de acesso
+- Biblioteca e dependências de terceiros
+- Código fonte
+- Repositório
+
+**Banco:**
+
+- Banco de dados
+- Tabelas do banco
+- Backup do banco
+
+**Infraestrutura:**
+
+- Hospedagem da API via Railway
+- Hospedagem do banco via Supabase
+- Hospedagem do front via Vercel
+
+-----
+
 ## 🎓 Projeto Acadêmico
  
 Projeto desenvolvido para a disciplina de Segurança da Informação da Universidade Católica.
