@@ -2,6 +2,8 @@ public class User
 {
     public User(string email, string passwordHash, string name, UserRole role)
     {
+        ValidateInput(email, name);
+        ValidatePasswordHash(passwordHash);
         UserID = Guid.NewGuid();
         Email = email;
         PasswordHash = passwordHash;
@@ -19,12 +21,43 @@ public class User
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
-    public void UpdateUser(string email, string name, UserRole role, bool isActive)
+    public void UpdateUser(string email, string name, UserRole role)
     {
+        ValidateInput(email, name);
         Email = email;
         Name = name;
         Role = role;
+    }
+
+    public void ChangeUserStatus(bool isActive)
+    {
         IsActive = isActive;
+    }
+
+    public void ChangePasswordHash(string passwordHash)
+    {
+        ValidatePasswordHash(passwordHash);
+        PasswordHash = passwordHash;
+    }
+
+    private static void ValidateInput(string email, string name)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ArgumentException("Email is required");
+        }
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name is required");
+        }
+    }
+
+    private static void ValidatePasswordHash(string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new ArgumentException("Password hash is required");
+        }
     }
 }
 

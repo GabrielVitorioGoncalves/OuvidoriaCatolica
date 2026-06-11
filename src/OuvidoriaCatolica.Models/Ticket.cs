@@ -1,23 +1,14 @@
 public class Ticket
 {
-    public Ticket(string protocol, string title, string description)
+    public Ticket(string title, string description, Guid authorId, Guid categoryId)
     {
-        if (string.IsNullOrWhiteSpace(protocol))
-        {
-            throw new InvalidOperationException("Protocol cannot be null or empty");
-        }
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            throw new InvalidOperationException("Title cannot be null or empty");
-        }
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw new InvalidOperationException("Description cannot be null or empty");
-        }
+        ValidateInput(title, description);
         TicketID = Guid.NewGuid();
         Protocol = protocol;
         Title = title;
         Description = description;
+        AuthorId = authorId;
+        CategoryId = categoryId;
         Status = TicketStatus.New;
         CreatedAt = DateTime.Now;
     }
@@ -26,20 +17,15 @@ public class Ticket
     public string Protocol { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
+    public Guid AuthorId { get; private set; }
+    public Guid CategoryId { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime ClosedAt { get; private set; }
 
     public void UpdateTicket(string title, string description)
     {
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            throw new InvalidOperationException("Title cannot be null or empty");
-        }
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw new InvalidOperationException("Description cannot be null or empty");
-        }
+        ValidateInput(title, description);
         Title = title;
         Description = description;
     }
@@ -57,8 +43,7 @@ public class Ticket
     {
         if (Status != TicketStatus.InReview)
         {
-            // throw new InvalidOperationException("Only tickets in review can ");
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Only tickets in review can be marked as awaiting response");
         }
         Status = TicketStatus.AwaitingResponse;
     }
@@ -67,6 +52,18 @@ public class Ticket
     {
         Status = TicketStatus.Closed;
         ClosedAt = DateTime.Now;
+    }
+
+    private static void ValidateInput(string title, string description)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new ArgumentException("Title is required");
+        }
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new ArgumentException("Description is required");
+        }
     }
 }
 
