@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using OuvidoriaCatolica.Models;
 using static CategoryDtos;
+
+namespace OuvidoriaCatolica.API.Services;
 
 public class CategoryService
 {
@@ -43,14 +46,25 @@ public class CategoryService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeactivateCategoryAsync(Guid id)
+    public async Task DeleteCategoryAsync(Guid id)
     {
         var category = await _context.Categories.FindAsync(id);
         
         if (category == null)
             throw new KeyNotFoundException("Category not found");
 
-        category.ChangeCategoryStatus(false);
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ChangeCategoryStatusAsync(Guid id, bool isActive)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        
+        if (category == null)
+            throw new KeyNotFoundException("Category not found");
+
+        category.ChangeCategoryStatus(isActive);
 
         _context.Categories.Update(category);
         await _context.SaveChangesAsync();

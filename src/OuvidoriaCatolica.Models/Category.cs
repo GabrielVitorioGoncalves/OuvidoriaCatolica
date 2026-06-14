@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class Category
 {
     public Category(string name, string description)

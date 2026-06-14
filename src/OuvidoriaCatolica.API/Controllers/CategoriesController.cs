@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OuvidoriaCatolica.API.Services;
 using static CategoryDtos;
 
 [ApiController]
@@ -85,12 +86,12 @@ public class CategoriesController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] bool isActive)
     {
         try
         {
-            await _service.DeactivateCategoryAsync(id);
+            await _service.ChangeCategoryStatusAsync(id, isActive);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
@@ -99,7 +100,25 @@ public class CategoriesController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "Ocorreu um erro interno ao desativar a categoria." });
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao alterar o status da categoria." });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            await _service.DeleteCategoryAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao excluir a categoria." });
         }
     }
 }

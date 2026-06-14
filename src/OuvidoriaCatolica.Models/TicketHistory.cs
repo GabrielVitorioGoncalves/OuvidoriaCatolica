@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class TicketHistory
 {
     public TicketHistory(Guid ticketId, Guid responsibleAttendant, TicketStatus previousStatus, TicketStatus newStatus)

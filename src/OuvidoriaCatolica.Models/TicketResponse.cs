@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class TicketResponse
 {
     public TicketResponse(Guid ticketId, Guid responsibleAttendant, string message)

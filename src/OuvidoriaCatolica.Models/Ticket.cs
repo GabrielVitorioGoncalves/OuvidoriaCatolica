@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class Ticket
 {
     public Ticket(string title, string description, Guid authorId, Guid categoryId)
