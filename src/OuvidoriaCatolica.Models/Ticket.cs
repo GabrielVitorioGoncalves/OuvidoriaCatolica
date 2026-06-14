@@ -1,10 +1,9 @@
 public class Ticket
 {
-    public Ticket(string protocol, string title, string description, Guid authorId, Guid categoryId)
+    public Ticket(string title, string description, Guid authorId, Guid categoryId)
     {
         ValidateInput(title, description);
         TicketID = Guid.NewGuid();
-        Protocol = protocol;
         Title = title;
         Description = description;
         AuthorId = authorId;
