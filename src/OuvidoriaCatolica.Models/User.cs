@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class User
 {
     public User(string email, string passwordHash, string name, UserRole role)
@@ -10,7 +12,7 @@ public class User
         Name = name;
         Role = role;
         IsActive = true;
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.UtcNow;
     }
 
     // EF Core
