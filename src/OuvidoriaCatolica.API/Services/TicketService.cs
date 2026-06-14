@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using OuvidoriaCatolica.Models;
 using static TicketDtos;
+
+namespace OuvidoriaCatolica.API.Services;
 
 public class TicketService
 {

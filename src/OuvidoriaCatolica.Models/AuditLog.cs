@@ -1,3 +1,5 @@
+namespace OuvidoriaCatolica.Models;
+
 public class AuditLog
 {
     public AuditLog(Guid userId, AuditActions actionExecuted, string ipAddress, string comments)

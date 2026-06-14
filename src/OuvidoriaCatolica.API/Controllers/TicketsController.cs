@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OuvidoriaCatolica.API.Services;
 using static TicketDtos;
 
 [ApiController]
