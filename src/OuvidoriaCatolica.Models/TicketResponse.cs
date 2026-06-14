@@ -14,6 +14,9 @@ public class TicketResponse
         RespondedAt = DateTime.Now;
     }
 
+    // EF Core
+    private TicketResponse() {}
+
     public Guid ResponseID { get; private set; }
     public Guid TicketID { get; private set; }
     public Guid ResponsibleAttendant { get; set; }

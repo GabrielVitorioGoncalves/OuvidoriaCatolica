@@ -10,6 +10,9 @@ public class AuditLog
         Comments = comments;
     }
 
+    // EF Core
+    private AuditLog() {}
+
     public Guid LogID { get; private set; }
     public Guid UserID { get; private set; }
     public AuditActions ActionExecuted { get; private set; }

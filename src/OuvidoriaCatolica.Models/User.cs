@@ -13,6 +13,9 @@ public class User
         CreatedAt = DateTime.Now;
     }
 
+    // EF Core
+    private User() {}
+
     public Guid UserID { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
