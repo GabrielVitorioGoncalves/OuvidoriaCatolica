@@ -23,8 +23,7 @@ public class UserService : IUserService
                 Email = u.Email,
                 Name = u.Name,
                 Role = u.Role,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt
+                IsActive = u.IsActive
             })
             .ToListAsync();
     }
@@ -39,8 +38,7 @@ public class UserService : IUserService
                 Email = u.Email,
                 Name = u.Name,
                 Role = u.Role,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt
+                IsActive = u.IsActive
             })
             .FirstOrDefaultAsync();
     }
@@ -49,7 +47,6 @@ public class UserService : IUserService
     {
         var user = new User(
             dto.Email,
-            dto.Password,
             dto.Name,
             dto.Role
         );
@@ -64,8 +61,7 @@ public class UserService : IUserService
             Email = user.Email,
             Name = user.Name,
             Role = user.Role,
-            IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt
+            IsActive = user.IsActive
         };
     }
 

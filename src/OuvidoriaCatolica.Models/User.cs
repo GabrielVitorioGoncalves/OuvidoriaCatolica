@@ -2,13 +2,11 @@ namespace OuvidoriaCatolica.Models;
 
 public class User
 {
-    public User(string email, string passwordHash, string name, UserRole role)
+    public User(string email, string name, UserRole role)
     {
         ValidateInput(email, name);
-        ValidatePasswordHash(passwordHash);
         UserID = Guid.NewGuid();
         Email = email;
-        PasswordHash = passwordHash;
         Name = name;
         Role = role;
         IsActive = true;
@@ -20,7 +18,7 @@ public class User
 
     public Guid UserID { get; private set; }
     public string Email { get; private set; }
-    public string PasswordHash { get; private set; }
+    public string? PasswordHash { get; private set; }
     public string Name { get; private set; }
     public UserRole Role { get; private set; }
     public bool IsActive { get; private set; }
@@ -39,11 +37,11 @@ public class User
         IsActive = isActive;
     }
 
-    public void ChangePasswordHash(string passwordHash)
-    {
-        ValidatePasswordHash(passwordHash);
-        PasswordHash = passwordHash;
-    }
+    // public void ChangePasswordHash(string passwordHash)
+    // {
+    //     ValidatePasswordHash(passwordHash);
+    //     PasswordHash = passwordHash;
+    // }
 
     private static void ValidateInput(string email, string name)
     {
@@ -57,13 +55,13 @@ public class User
         }
     }
 
-    private static void ValidatePasswordHash(string passwordHash)
-    {
-        if (string.IsNullOrWhiteSpace(passwordHash))
-        {
-            throw new ArgumentException("Password hash is required");
-        }
-    }
+    // private static void ValidatePasswordHash(string passwordHash)
+    // {
+    //     if (string.IsNullOrWhiteSpace(passwordHash))
+    //     {
+    //         throw new ArgumentException("Password hash is required");
+    //     }
+    // }
 }
 
 public enum UserRole
