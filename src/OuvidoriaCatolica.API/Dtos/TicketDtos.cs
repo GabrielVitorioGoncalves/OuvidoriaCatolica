@@ -13,4 +13,9 @@ public class TicketDtos
         public Guid ResponsibleAttendantId { get; set; }
         public string Message { get; set; }
     }
+
+    public class ChangeTicketStatusRequest
+    {
+        public Guid ResponsibleAttendantId { get; set; }
+    }
 }
