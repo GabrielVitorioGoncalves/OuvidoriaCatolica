@@ -7,4 +7,10 @@ public class TicketDtos
         public Guid AuthorId { get; set; }
         public Guid CategoryId { get; set; }
     }
+
+    public class CreateTicketResponseRequest
+    {
+        public Guid ResponsibleAttendantId { get; set; }
+        public string Message { get; set; }
+    }
 }

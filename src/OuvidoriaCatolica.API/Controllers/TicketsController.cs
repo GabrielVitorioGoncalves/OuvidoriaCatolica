@@ -43,4 +43,31 @@ public class TicketsController : ControllerBase
             return StatusCode(500, new { message = "Ocorreu um erro interno ao criar o ticket." });
         }
     }
+
+    [HttpPost("{id}/responses")]
+    public async Task<IActionResult> AddResponse(Guid id, [FromBody] CreateTicketResponseRequest request)
+    {
+        try
+        {
+            var response = await _service.AddResponseAsync(id, request);
+            
+            return StatusCode(201, response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao adicionar a resposta." });
+        }
+    }
 }
