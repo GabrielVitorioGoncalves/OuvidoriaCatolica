@@ -9,7 +9,7 @@ public class TicketHistory
         ResponsibleAttendant = responsibleAttendant;
         PreviousStatus = previousStatus;
         NewStatus = newStatus;
-        ChangedAt = DateTime.Now;
+        ChangedAt = DateTime.UtcNow;
     }
 
     // EF Core
