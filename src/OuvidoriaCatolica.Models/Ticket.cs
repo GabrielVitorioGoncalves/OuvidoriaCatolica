@@ -11,21 +11,20 @@ public class Ticket
         AuthorId = authorId;
         CategoryId = categoryId;
         Status = TicketStatus.New;
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.UtcNow;
     }
 
     // EF Core
     private Ticket() {}
 
     public Guid TicketID { get; private set; }
-    public string Protocol { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
     public Guid AuthorId { get; private set; }
     public Guid CategoryId { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
-    public DateTime ClosedAt { get; private set; }
+    public DateTime? ClosedAt { get; private set; }
 
     public void UpdateTicket(string title, string description)
     {
@@ -55,7 +54,7 @@ public class Ticket
     public void CloseTicket()
     {
         Status = TicketStatus.Closed;
-        ClosedAt = DateTime.Now;
+        ClosedAt = DateTime.UtcNow;
     }
 
     private static void ValidateInput(string title, string description)
