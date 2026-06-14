@@ -7,7 +7,7 @@ public class AuditLog
         LogID = Guid.NewGuid();
         UserID = userId;
         ActionExecuted = actionExecuted;
-        Timestamp = DateTime.Now;
+        Timestamp = DateTime.UtcNow;
         IPAddress = ipAddress;
         Comments = comments;
     }

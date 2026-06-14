@@ -13,7 +13,7 @@ public class TicketResponse
         TicketID = ticketId;
         ResponsibleAttendant = responsibleAttendant;
         Message = message;
-        RespondedAt = DateTime.Now;
+        RespondedAt = DateTime.UtcNow;
     }
 
     // EF Core
