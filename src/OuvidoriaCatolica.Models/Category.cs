@@ -9,6 +9,9 @@ public class Category
         IsActive = true;
     }
 
+    // EF Core
+    private Category() {}
+
     public Guid CategoryID { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }

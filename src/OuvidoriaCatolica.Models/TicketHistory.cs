@@ -10,6 +10,9 @@ public class TicketHistory
         ChangedAt = DateTime.Now;
     }
 
+    // EF Core
+    private TicketHistory() {}
+
     public Guid HistoryID { get; private set; }
     public Guid TicketID { get; private set; }
     public Guid ResponsibleAttendant { get; private set; }

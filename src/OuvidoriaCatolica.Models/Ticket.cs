@@ -1,6 +1,6 @@
 public class Ticket
 {
-    public Ticket(string title, string description, Guid authorId, Guid categoryId)
+    public Ticket(string protocol, string title, string description, Guid authorId, Guid categoryId)
     {
         ValidateInput(title, description);
         TicketID = Guid.NewGuid();
@@ -12,6 +12,9 @@ public class Ticket
         Status = TicketStatus.New;
         CreatedAt = DateTime.Now;
     }
+
+    // EF Core
+    private Ticket() {}
 
     public Guid TicketID { get; private set; }
     public string Protocol { get; private set; }
