@@ -37,7 +37,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Ticket>(entity =>
         {
             entity.HasKey(e => e.TicketID);
-            entity.Property(e => e.Protocol).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).IsRequired();
 
