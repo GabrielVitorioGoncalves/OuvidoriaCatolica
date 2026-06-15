@@ -64,5 +64,25 @@ namespace OuvidoriaCatolica.Services
 
             return tokenHandler.WriteToken(token);
         }
+
+        public void CreatePassword(string email, string password)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null || !user.IsActive)
+            {
+                throw new ArgumentException("Usuário inválido ou inativo.");
+            }
+
+            if (!string.IsNullOrEmpty(user.PasswordHash))
+            {
+                throw new InvalidOperationException("Este usuário já possui uma senha cadastrada.");
+            }
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            
+            user.ChangePasswordHash(passwordHash);
+            _context.SaveChanges();
+        }
     }
 }

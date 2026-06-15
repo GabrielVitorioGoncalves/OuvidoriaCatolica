@@ -37,11 +37,14 @@ public class User
         IsActive = isActive;
     }
 
-    // public void ChangePasswordHash(string passwordHash)
-    // {
-    //     ValidatePasswordHash(passwordHash);
-    //     PasswordHash = passwordHash;
-    // }
+    public void ChangePasswordHash(string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new ArgumentException("Password hash is required");
+        }
+        PasswordHash = passwordHash;
+    }
 
     private static void ValidateInput(string email, string name)
     {
@@ -54,14 +57,6 @@ public class User
             throw new ArgumentException("Name is required");
         }
     }
-
-    // private static void ValidatePasswordHash(string passwordHash)
-    // {
-    //     if (string.IsNullOrWhiteSpace(passwordHash))
-    //     {
-    //         throw new ArgumentException("Password hash is required");
-    //     }
-    // }
 }
 
 public enum UserRole

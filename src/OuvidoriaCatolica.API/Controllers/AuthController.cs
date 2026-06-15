@@ -37,5 +37,27 @@ namespace OuvidoriaCatolica.Controllers
                 return StatusCode(500, new { message = "Ocorreu um erro interno ao tentar realizar o login." });
             }
         }
+
+        [HttpPost("create-password")]
+        public IActionResult CreatePassword([FromBody] CreatePasswordRequest request)
+        {
+            try
+            {
+                _service.CreatePassword(request.Email, request.Password);
+                return Ok(new { message = "Senha cadastrada com sucesso. Você já pode realizar o login." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Ocorreu um erro interno ao tentar cadastrar a senha." });
+            }
+        }
     }
 }
