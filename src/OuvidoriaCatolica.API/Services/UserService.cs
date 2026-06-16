@@ -23,6 +23,7 @@ public class UserService : IUserService
                 Email = u.Email,
                 Name = u.Name,
                 Role = u.Role,
+                Sector = u.Sector,
                 IsActive = u.IsActive
             })
             .ToListAsync();
@@ -38,6 +39,7 @@ public class UserService : IUserService
                 Email = u.Email,
                 Name = u.Name,
                 Role = u.Role,
+                Sector = u.Sector,
                 IsActive = u.IsActive
             })
             .FirstOrDefaultAsync();
@@ -48,7 +50,8 @@ public class UserService : IUserService
         var user = new User(
             dto.Email,
             dto.Name,
-            dto.Role
+            dto.Role,
+            dto.Sector
         );
 
         _context.Users.Add(user);
@@ -61,6 +64,7 @@ public class UserService : IUserService
             Email = user.Email,
             Name = user.Name,
             Role = user.Role,
+            Sector = user.Sector,
             IsActive = user.IsActive
         };
     }
@@ -75,7 +79,8 @@ public class UserService : IUserService
         user.UpdateUser(
             dto.Email,
             dto.Name,
-            dto.Role
+            dto.Role,
+            dto.Sector
         );
 
         await _context.SaveChangesAsync();

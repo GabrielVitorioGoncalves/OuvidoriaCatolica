@@ -2,14 +2,15 @@ namespace OuvidoriaCatolica.Models;
 
 public class Ticket
 {
-    public Ticket(string title, string description, Guid authorId, Guid categoryId)
+    public Ticket(string title, string description, Guid authorId, Sector sector)
     {
         ValidateInput(title, description);
         TicketID = Guid.NewGuid();
         Title = title;
         Description = description;
         AuthorId = authorId;
-        CategoryId = categoryId;
+        // CategoryId = categoryId;
+        Sector = sector;
         Status = TicketStatus.New;
         CreatedAt = DateTime.UtcNow;
     }
@@ -21,17 +22,18 @@ public class Ticket
     public string Title { get; private set; }
     public string Description { get; private set; }
     public Guid AuthorId { get; private set; }
-    public Guid CategoryId { get; private set; }
+    // public Guid CategoryId { get; private set; }
+    public Sector Sector { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? ClosedAt { get; private set; }
 
-    public void UpdateTicket(string title, string description)
-    {
-        ValidateInput(title, description);
-        Title = title;
-        Description = description;
-    }
+    // public void UpdateTicket(string title, string description)
+    // {
+    //     ValidateInput(title, description);
+    //     Title = title;
+    //     Description = description;
+    // }
 
     public void StartTicketReview()
     {
