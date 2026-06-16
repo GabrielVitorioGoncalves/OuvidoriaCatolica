@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using OuvidoriaCatolica.API.Services.Interfaces;
 using OuvidoriaCatolica.API.DTOs.User;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OuvidoriaCatolica.API.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase

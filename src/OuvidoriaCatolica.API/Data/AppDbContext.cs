@@ -8,7 +8,7 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
-    public DbSet<Category> Categories { get; set; }
+    // public DbSet<Category> Categories { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketResponse> TicketResponses { get; set; }
     public DbSet<TicketHistory> TicketHistories { get; set; }
@@ -27,12 +27,12 @@ public class AppDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(100).IsRequired(false);
         });
 
-        modelBuilder.Entity<Category>(entity =>
-        {
-            entity.HasKey(e => e.CategoryID);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Description).HasMaxLength(500);
-        });
+        // modelBuilder.Entity<Category>(entity =>
+        // {
+        //     entity.HasKey(e => e.CategoryID);
+        //     entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        //     entity.Property(e => e.Description).HasMaxLength(500);
+        // });
 
         modelBuilder.Entity<Ticket>(entity =>
         {
@@ -45,10 +45,10 @@ public class AppDbContext : DbContext
                   .HasForeignKey(e => e.AuthorId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne<Category>()
-                  .WithMany()
-                  .HasForeignKey(e => e.CategoryId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            // entity.HasOne<Category>()
+            //       .WithMany()
+            //       .HasForeignKey(e => e.CategoryId)
+            //       .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<TicketResponse>(entity =>

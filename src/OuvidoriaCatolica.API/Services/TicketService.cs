@@ -21,10 +21,11 @@ public class TicketService
     public async Task<Ticket> CreateTicketAsync(CreateTicketRequest request)
     {
         var ticket = new Ticket(
-            title: request.Title,
-            description: request.Description,
-            authorId: request.AuthorId,
-            categoryId: request.CategoryId
+            request.Title,
+            request.Description,
+            request.AuthorId,
+            // categoryId: request.CategoryId,
+            request.Sector
         );
 
         _context.Tickets.Add(ticket);
