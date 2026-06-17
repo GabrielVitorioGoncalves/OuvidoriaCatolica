@@ -44,6 +44,28 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevelopmentPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173/")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+
+    options.AddPolicy("ProductionPolicy", policy =>
+    {
+        string allowedOrigin = builder.Configuration["CORS_ALLOWED_ORIGIN"]
+            ?? throw new InvalidOperationException("Variável de ambiente 'CORS_ALLOWED_ORIGIN' não configurada.");
+
+        policy.WithOrigins(allowedOrigin)
+              .AllowAnyHeader()
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -52,6 +74,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(app.Environment.IsDevelopment() ? "DevelopmentPolicy" : "ProductionPolicy");
 
 app.UseAuthentication();
 
