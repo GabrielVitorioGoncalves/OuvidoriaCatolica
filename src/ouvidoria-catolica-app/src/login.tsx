@@ -8,22 +8,48 @@ import {
   Typography,
 } from "@mui/material";
 
+// 1. Importamos o Service e o Adapter que criamos
+import { AuthService } from "./services/AuthService";
+import { httpClient } from "./infra/AxiosAdapter";
+
+// 2. Instanciamos o service
+const authService = new AuthService(httpClient);
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setErro(""); 
 
-    console.log({
-      email,
-      senha,
-    });
+    try {
+     console.log("A URL BASE ESTÁ COMO:", import.meta.env.VITE_API_BASE_URL);
+      const resposta = await authService.login({ 
+        email: email, 
+        password: senha 
+      });
+
+      localStorage.setItem('@Ouvidoria:token', resposta.token);
+      alert('Login feito com sucesso!');
+      
+      
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      setErro("Credenciais inválidas ou erro no servidor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const preencherDemo = (emailDemo: string) => {
     setEmail(emailDemo);
     setSenha("123456");
+    setErro(""); // Limpa o erro ao trocar de conta
   };
 
   return (
@@ -34,7 +60,7 @@ export default function Login() {
         overflow: "hidden",
       }}
     >
-      {/* Lado esquerdo */}
+      
       <Box
         sx={{
           width: "50%",
@@ -226,9 +252,16 @@ export default function Login() {
               }}
             />
 
+            {erro && (
+              <Typography sx={{ color: "#ef4444", fontSize: "0.875rem", mb: 2 }}>
+                {erro}
+              </Typography>
+            )}
+
             <Button
               type="submit"
               fullWidth
+              disabled={loading}
               variant="contained"
               sx={{
                 bgcolor: "#fff",
@@ -242,9 +275,13 @@ export default function Login() {
                 "&:hover": {
                   bgcolor: "#e5e5e5",
                 },
+                "&.Mui-disabled": {
+                  bgcolor: "#cccccc",
+                  color: "#666666"
+                }
               }}
             >
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
 
