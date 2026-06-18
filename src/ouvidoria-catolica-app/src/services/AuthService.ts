@@ -20,4 +20,8 @@ export class AuthService {
   async login(dados: LoginDTO): Promise<LoginResponse> {
     return this.http.post<LoginResponse>('/auth/login', dados);
   }
+
+  async createPassword(dados: LoginDTO): Promise<void> {
+    return this.http.post<void>('/auth/create-password', dados)
+  }
 }
