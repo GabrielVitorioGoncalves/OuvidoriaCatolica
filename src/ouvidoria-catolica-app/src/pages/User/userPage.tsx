@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
-import Header from "./components/Header";
-import {
-  Box,
-  Button,
-  Chip,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import Header from "../../components/Header";
+import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import { Add, ChevronRight, InboxOutlined } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -33,10 +27,9 @@ interface Resumo {
   concluidas: number;
 }
 
-// ─── Mock de API (substitua por chamadas reais) ────────────────────────────────
+// ─── Mock de API ────────────────────────────────
 
 async function fetchResumo(): Promise<Resumo> {
-  await new Promise((r) => setTimeout(r, 800)); // simula latência
   return { total: 3, emAndamento: 3, concluidas: 0 };
 }
 
@@ -67,7 +60,7 @@ async function fetchManifestacoes(): Promise<Manifestacao[]> {
       atualizadaEm: "02/06/2025",
       status: "Em atendimento",
     },
-        {
+    {
       id: "4",
       protocolo: "#2025-000123",
       tipo: "Reclamação",
@@ -115,7 +108,12 @@ function CardResumo({
         {label}
       </Typography>
       {loading ? (
-        <Skeleton variant="text" width={40} height={48} sx={{ bgcolor: "#3a3a3a" }} />
+        <Skeleton
+          variant="text"
+          width={40}
+          height={48}
+          sx={{ bgcolor: "#3a3a3a" }}
+        />
       ) : (
         <Typography
           variant="h4"
@@ -179,7 +177,14 @@ function ItemManifestacao({
       </Box>
 
       {/* Lado direito */}
-      <Stack direction="row" alignItems="center" spacing={1} flexShrink={0}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
         <Chip
           label={item.status}
           color={statusColor[item.status]}
@@ -217,7 +222,8 @@ function EstadoVazio() {
 
 // ─── Componente principal ──────────────────────────────────────────────────────
 
-export default function MinhasManifestacoes() {
+export default function UserPage() {
+  const navigate = useNavigate();
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [manifestacoes, setManifestacoes] = useState<Manifestacao[]>([]);
   const [loadingResumo, setLoadingResumo] = useState(true);
@@ -234,8 +240,7 @@ export default function MinhasManifestacoes() {
   }, []);
 
   function handleNovaManifestacao() {
-    // Navegue para a rota desejada, ex: navigate("/nova-manifestacao")
-    alert("Navegar para Nova Manifestação");
+    navigate("/ticket")
   }
 
   function handleVerDetalhe(id: string) {
@@ -245,105 +250,108 @@ export default function MinhasManifestacoes() {
 
   return (
     <div>
-    <Header/>
-    <Box
-      sx={{
-        minHeight: "90vh",
-        bgcolor: "#0A0A0A",
-        px: { xs: 2, sm: 4, md: 8, lg: 16 },
-        py: { xs: 4, sm: 6 },
-      }}
-    >
+      <Header />
       <Box
         sx={{
-          display: "flex",
-          alignItems: { xs: "flex-start", sm: "center" },
-          justifyContent: "space-between",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 2,
-          mb: { xs: 4, sm: 5 },
+          minHeight: "90vh",
+          bgcolor: "#0A0A0A",
+          px: { xs: 2, sm: 4, md: 8, lg: 16 },
+          py: { xs: 4, sm: 6 },
         }}
       >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: "white", fontWeight: 700, mb: 0.5 }}
-          >
-            Minhas Manifestações
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#909090" }}>
-            Acompanhe o andamento das suas solicitações.
-          </Typography>
-        </Box>
-
-        <Button
-          variant="outlined"
-          startIcon={<Add />}
-          onClick={handleNovaManifestacao}
+        <Box
           sx={{
-            color: "white",
-            borderColor: "white",
-            borderRadius: 6,
-            px: 3,
-            textTransform: "none",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.08)", borderColor: "white" },
+            display: "flex",
+            alignItems: { xs: "flex-start", sm: "center" },
+            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            mb: { xs: 4, sm: 5 },
           }}
         >
-          Nova Manifestação
-        </Button>
+          <Box>
+            <Typography
+              variant="h5"
+              sx={{ color: "white", fontWeight: 700, mb: 0.5 }}
+            >
+              Minhas Manifestações
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#909090" }}>
+              Acompanhe o andamento das suas solicitações.
+            </Typography>
+          </Box>
+
+          <Button
+            variant="outlined"
+            startIcon={<Add />}
+            onClick={handleNovaManifestacao}
+            sx={{
+              color: "white",
+              borderColor: "white",
+              borderRadius: 6,
+              px: 3,
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              "&:hover": {
+                bgcolor: "rgba(255,255,255,0.08)",
+                borderColor: "white",
+              },
+            }}
+          >
+            Nova Manifestação
+          </Button>
+        </Box>
+
+        {/* Cards de resumo */}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          sx={{ mb: { xs: 4, sm: 5 } }}
+        >
+          <CardResumo
+            label="Total"
+            value={resumo?.total ?? 0}
+            loading={loadingResumo}
+          />
+          <CardResumo
+            label="Em andamento"
+            value={resumo?.emAndamento ?? 0}
+            loading={loadingResumo}
+          />
+          <CardResumo
+            label="Concluídas"
+            value={resumo?.concluidas ?? 0}
+            loading={loadingResumo}
+          />
+        </Stack>
+
+        {/* Lista de manifestações */}
+        {loadingLista ? (
+          <Stack spacing={2}>
+            {[1, 2, 3].map((i) => (
+              <Skeleton
+                key={i}
+                variant="rounded"
+                height={90}
+                sx={{ bgcolor: "#2a2a2a", borderRadius: 3 }}
+              />
+            ))}
+          </Stack>
+        ) : manifestacoes.length === 0 ? (
+          <EstadoVazio />
+        ) : (
+          <Stack spacing={2}>
+            {manifestacoes.map((item) => (
+              <ItemManifestacao
+                key={item.id}
+                item={item}
+                onClick={handleVerDetalhe}
+              />
+            ))}
+          </Stack>
+        )}
       </Box>
-
-      {/* Cards de resumo */}
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ mb: { xs: 4, sm: 5 } }}
-      >
-        <CardResumo
-          label="Total"
-          value={resumo?.total ?? 0}
-          loading={loadingResumo}
-        />
-        <CardResumo
-          label="Em andamento"
-          value={resumo?.emAndamento ?? 0}
-          loading={loadingResumo}
-        />
-        <CardResumo
-          label="Concluídas"
-          value={resumo?.concluidas ?? 0}
-          loading={loadingResumo}
-        />
-      </Stack>
-
-      {/* Lista de manifestações */}
-      {loadingLista ? (
-        <Stack spacing={2}>
-          {[1, 2, 3].map((i) => (
-            <Skeleton
-              key={i}
-              variant="rounded"
-              height={90}
-              sx={{ bgcolor: "#2a2a2a", borderRadius: 3 }}
-            />
-          ))}
-        </Stack>
-      ) : manifestacoes.length === 0 ? (
-        <EstadoVazio />
-      ) : (
-        <Stack spacing={2}>
-          {manifestacoes.map((item) => (
-            <ItemManifestacao
-              key={item.id}
-              item={item}
-              onClick={handleVerDetalhe}
-            />
-          ))}
-        </Stack>
-      )}
-    </Box>
     </div>
   );
 }
