@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OuvidoriaCatolica.API.Services;
 using static TicketDtos;
@@ -123,6 +126,30 @@ public class TicketsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar o histórico do ticket." });
+        }
+    }
+
+    [Authorize]
+    [HttpGet("my-tickets")] 
+    public async Task<IActionResult> GetMyTickets()
+    {
+        try
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized(new { message = "Não foi possível identificar o usuário autenticado." });
+            }
+
+            var tickets = await _service.GetTicketsByUserIdAsync(userId);
+            
+            return Ok(tickets); 
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar os seus tickets." });
         }
     }
 }

@@ -101,4 +101,12 @@ public class TicketService
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Ticket>> GetTicketsByUserIdAsync(Guid userId)
+    {
+        return await _context.Tickets
+            .Where(t => t.AuthorId == userId)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }
