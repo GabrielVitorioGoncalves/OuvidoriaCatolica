@@ -26,6 +26,11 @@ namespace OuvidoriaCatolica.Services
                 throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
             }
 
+            if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            {
+                throw new UnauthorizedAccessException("E-mail não vinculado");
+            }
+
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
             if (!isPasswordValid)
             {
