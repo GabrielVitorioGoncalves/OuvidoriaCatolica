@@ -13,7 +13,7 @@ export default function Header() {
         minHeight: "10vh",
         display: "flex",
         alignItems: "center",
-        bgcolor: "#202020",
+        bgcolor: "#141414",
         px: { xs: 2, sm: 4, md: 8, lg: 24 },
       }}
     >
