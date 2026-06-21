@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OuvidoriaCatolica.API.Extensions;
 using OuvidoriaCatolica.Services;
@@ -59,6 +60,26 @@ namespace OuvidoriaCatolica.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Ocorreu um erro interno ao tentar cadastrar a senha." });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult GetMe()
+        {
+            try
+            {
+                var currentUserId = User.GetUserId();
+                var loggedUser = _service.GetLoggedUser(currentUserId);
+                return Ok(loggedUser);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar as informações do usuário logado." });
             }
         }
     }

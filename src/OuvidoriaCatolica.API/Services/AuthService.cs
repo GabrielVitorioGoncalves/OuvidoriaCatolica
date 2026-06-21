@@ -2,7 +2,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using OuvidoriaCatolica.Models; 
+using OuvidoriaCatolica.Models;
+using static AuthDtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace OuvidoriaCatolica.Services
 {
@@ -88,6 +90,30 @@ namespace OuvidoriaCatolica.Services
             
             user.ChangePasswordHash(passwordHash, currentUserId);
             _context.SaveChanges();
+        }
+
+        public UserLoggedResponse GetLoggedUser(Guid userId)
+        {
+            var user = _context.Users
+                .AsNoTracking()
+                .Select(u => new UserLoggedResponse
+                {
+                    UserID = u.UserID,
+                    Name = u.Name, 
+                    Email = u.Email, 
+                    Role = u.Role,
+                    Sector = u.Sector,
+                    IsActive = u.IsActive,
+                    CreatedAt = u.CreatedAt
+                })
+                .FirstOrDefault(u => u.UserID == userId);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Usuário não encontrado.");
+            }
+
+            return user;
         }
     }
 }
