@@ -17,6 +17,7 @@ public class TicketsController : ControllerBase
         _service = new TicketService(context);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -31,6 +32,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)
     {
@@ -49,6 +51,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost("{id}/responses")]
     public async Task<IActionResult> AddResponse(Guid id, [FromBody] CreateTicketResponseRequest request)
     {
@@ -76,6 +79,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id}/request-info")]
     public async Task<IActionResult> RequestMoreInfo(Guid id, [FromBody] ChangeTicketStatusRequest request)
     {
@@ -98,6 +102,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id}/close")]
     public async Task<IActionResult> CloseTicket(Guid id, [FromBody] ChangeTicketStatusRequest request)
     {
@@ -116,6 +121,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{id}/history")]
     public async Task<IActionResult> GetHistory(Guid id)
     {
@@ -143,6 +149,21 @@ public class TicketsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar os seus tickets." });
+        }
+    }
+
+    [Authorize]
+    [HttpGet("{id}/responses")]
+    public async Task<IActionResult> GetResponses(Guid id)
+    {
+        try
+        {
+            var responses = await _service.GetTicketResponsesAsync(id);
+            return Ok(responses);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar as respostas do ticket." });
         }
     }
 }

@@ -109,4 +109,13 @@ public class TicketService
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<TicketResponse>> GetTicketResponsesAsync(Guid ticketId)
+    {
+        return await _context.TicketResponses
+            .Where(r => r.TicketID == ticketId)
+            .OrderBy(r => r.RespondedAt)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }
