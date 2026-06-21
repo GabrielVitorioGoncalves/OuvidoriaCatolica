@@ -118,4 +118,12 @@ public class TicketService
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Ticket>> GetTicketsBySectorAsync(Sector sector)
+    {
+        return await _context.Tickets
+            .Where(t => t.Sector == sector)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }
