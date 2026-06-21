@@ -1,9 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OuvidoriaCatolica.API.Extensions;
 using OuvidoriaCatolica.API.Services;
+using OuvidoriaCatolica.Models;
 using static TicketDtos;
 
 [ApiController]
@@ -164,6 +163,20 @@ public class TicketsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar as respostas do ticket." });
+        }
+    }
+
+    [HttpGet("sector/{sector}")]
+    public async Task<IActionResult> GetBySector(Sector sector)
+    {
+        try
+        {
+            var tickets = await _service.GetTicketsBySectorAsync(sector);
+            return Ok(tickets);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar as manifestações por setor." });
         }
     }
 }
