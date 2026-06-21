@@ -166,6 +166,7 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("sector/{sector}")]
     public async Task<IActionResult> GetBySector(Sector sector)
     {
