@@ -45,12 +45,13 @@ public class UserService : IUserService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<UserResponseDto> CreateAsync(CreateUserDto dto)
+    public async Task<UserResponseDto> CreateAsync(CreateUserDto dto, Guid currentUserId)
     {
         var user = new User(
             dto.Email,
             dto.Name,
             dto.Role,
+            currentUserId,
             dto.Sector
         );
 
@@ -69,7 +70,7 @@ public class UserService : IUserService
         };
     }
 
-    public async Task UpdateAsync(Guid id, UpdateUserDto dto)
+    public async Task UpdateAsync(Guid id, UpdateUserDto dto, Guid currentUserId)
     {
         var user = await _context.Users.FindAsync(id);
 
@@ -80,20 +81,21 @@ public class UserService : IUserService
             dto.Email,
             dto.Name,
             dto.Role,
-            dto.Sector
+            dto.Sector,
+            currentUserId
         );
 
         await _context.SaveChangesAsync();
     }
 
-    public async Task ChangeStatusAsync(Guid id, bool isActive)
+    public async Task ChangeStatusAsync(Guid id, bool isActive, Guid currentUserId)
     {
         var user = await _context.Users.FindAsync(id);
 
         if (user is null)
             throw new Exception("User not found");
 
-        user.ChangeUserStatus(isActive);
+        user.ChangeUserStatus(isActive, currentUserId);
 
         await _context.SaveChangesAsync();
     }
