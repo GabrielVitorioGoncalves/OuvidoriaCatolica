@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OuvidoriaCatolica.API.Extensions;
 using OuvidoriaCatolica.Services;
 using static AuthDtos;
 
@@ -43,7 +44,8 @@ namespace OuvidoriaCatolica.Controllers
         {
             try
             {
-                _service.CreatePassword(request.Email, request.Password);
+                var currentUserId = User.GetUserId();
+                _service.CreatePassword(request.Email, request.Password, currentUserId);
                 return Ok(new { message = "Senha cadastrada com sucesso. Você já pode realizar o login." });
             }
             catch (ArgumentException ex)

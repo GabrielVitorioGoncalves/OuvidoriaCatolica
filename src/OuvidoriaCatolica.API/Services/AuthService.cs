@@ -70,7 +70,7 @@ namespace OuvidoriaCatolica.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public void CreatePassword(string email, string password)
+        public void CreatePassword(string email, string password, Guid currentUserId)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == email);
 
@@ -86,7 +86,7 @@ namespace OuvidoriaCatolica.Services
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
             
-            user.ChangePasswordHash(passwordHash);
+            user.ChangePasswordHash(passwordHash, currentUserId);
             _context.SaveChanges();
         }
     }

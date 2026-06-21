@@ -25,6 +25,20 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => e.Email).IsUnique();
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(100).IsRequired(false);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.CreatedBy).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired(false);
+            entity.Property(e => e.UpdatedBy).IsRequired(false);
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.UpdatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // modelBuilder.Entity<Category>(entity =>

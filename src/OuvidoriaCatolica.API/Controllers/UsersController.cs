@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OuvidoriaCatolica.API.Services.Interfaces;
 using OuvidoriaCatolica.API.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
+using OuvidoriaCatolica.API.Extensions;
 
 namespace OuvidoriaCatolica.API.Controllers;
 
@@ -10,24 +11,24 @@ namespace OuvidoriaCatolica.API.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly IUserService _userService;
+    private readonly IUserService _service;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService service)
     {
-        _userService = userService;
+        _service = service;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var users = await _userService.GetAllAsync();
+        var users = await _service.GetAllAsync();
         return Ok(users);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var user = await _userService.GetByIdAsync(id);
+        var user = await _service.GetByIdAsync(id);
 
         if (user == null)
             return NotFound();
@@ -38,7 +39,8 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateUserDto dto)
     {
-        var user = await _userService.CreateAsync(dto);
+        var currentUserId = User.GetUserId();
+        var user = await _service.CreateAsync(dto, currentUserId);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -49,7 +51,8 @@ public class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateUserDto dto)
     {
-        await _userService.UpdateAsync(id, dto);
+        var currentUserId = User.GetUserId();
+        await _service.UpdateAsync(id, dto, currentUserId);
         return NoContent();
     }
 
@@ -58,14 +61,15 @@ public class UsersController : ControllerBase
         Guid id,
         ChangeUserStatusDto dto)
     {
-        await _userService.ChangeStatusAsync(id, dto.IsActive);
+        var currentUserId = User.GetUserId();
+        await _service.ChangeStatusAsync(id, dto.IsActive, currentUserId);
         return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _userService.DeleteAsync(id);
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 }
