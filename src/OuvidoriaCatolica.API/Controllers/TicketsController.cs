@@ -16,7 +16,7 @@ public class TicketsController : ControllerBase
         _service = new TicketService(context);
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -31,13 +31,14 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Common")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)
     {
         try
         {
-            var createdTicket = await _service.CreateTicketAsync(request);
+            var currentUserId = User.GetUserId();
+            var createdTicket = await _service.CreateTicketAsync(request, currentUserId);
             return StatusCode(201, createdTicket); 
         }
         catch (ArgumentException ex)
@@ -50,14 +51,14 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Attendant, Admin")]
     [HttpPost("{id}/responses")]
     public async Task<IActionResult> AddResponse(Guid id, [FromBody] CreateTicketResponseRequest request)
     {
         try
         {
-            var response = await _service.AddResponseAsync(id, request);
-            
+            var currentUserId = User.GetUserId();
+            var response = await _service.AddResponseAsync(id, request, currentUserId);
             return StatusCode(201, response);
         }
         catch (KeyNotFoundException ex)
@@ -72,19 +73,24 @@ public class TicketsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
+        }
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao adicionar a resposta." });
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Attendant, Admin")]
     [HttpPut("{id}/request-info")]
-    public async Task<IActionResult> RequestMoreInfo(Guid id, [FromBody] ChangeTicketStatusRequest request)
+    public async Task<IActionResult> RequestMoreInfo(Guid id)
     {
         try
         {
-            await _service.RequestMoreInformationAsync(id, request);
+            var currentUserId = User.GetUserId();
+            await _service.RequestMoreInformationAsync(id, currentUserId);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
@@ -95,24 +101,33 @@ public class TicketsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
+        }
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao alterar o status do ticket." });
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Attendant, Admin")]
     [HttpPut("{id}/close")]
-    public async Task<IActionResult> CloseTicket(Guid id, [FromBody] ChangeTicketStatusRequest request)
+    public async Task<IActionResult> CloseTicket(Guid id)
     {
         try
         {
-            await _service.CloseTicketAsync(id, request);
+            var currentUserId = User.GetUserId();
+            await _service.CloseTicketAsync(id, currentUserId);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception)
         {
@@ -120,13 +135,14 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Attendant, Admin")]
     [HttpGet("{id}/history")]
     public async Task<IActionResult> GetHistory(Guid id)
     {
         try
         {
-            var history = await _service.GetTicketHistoryAsync(id);
+            var currentUserId = User.GetUserId();
+            var history = await _service.GetTicketHistoryAsync(id, currentUserId);
             return Ok(history);
         }
         catch (Exception)
@@ -135,7 +151,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Common")]
     [HttpGet("my-tickets")] 
     public async Task<IActionResult> GetMyTickets()
     {
@@ -157,8 +173,17 @@ public class TicketsController : ControllerBase
     {
         try
         {
-            var responses = await _service.GetTicketResponsesAsync(id);
+            var currentUserId = User.GetUserId();
+            var responses = await _service.GetTicketResponsesAsync(id, currentUserId);
             return Ok(responses);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception)
         {
@@ -166,14 +191,23 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Attendant")]
     [HttpGet("sector/{sector}")]
     public async Task<IActionResult> GetBySector(Sector sector)
     {
         try
         {
-            var tickets = await _service.GetTicketsBySectorAsync(sector);
+            var currentUserId = User.GetUserId();
+            var tickets = await _service.GetTicketsBySectorAsync(sector, currentUserId);
             return Ok(tickets);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception)
         {

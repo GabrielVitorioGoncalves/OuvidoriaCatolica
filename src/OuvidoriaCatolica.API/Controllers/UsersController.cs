@@ -6,7 +6,6 @@ using OuvidoriaCatolica.API.Extensions;
 
 namespace OuvidoriaCatolica.API.Controllers;
 
-[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -18,6 +17,7 @@ public class UsersController : ControllerBase
         _service = service;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -25,6 +25,7 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+    [Authorize(Roles = "Admin")]    
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -36,6 +37,7 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateUserDto dto)
     {
@@ -48,6 +50,7 @@ public class UsersController : ControllerBase
             user);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateUserDto dto)
     {
@@ -56,6 +59,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> ChangeStatus(
         Guid id,
@@ -66,6 +70,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
