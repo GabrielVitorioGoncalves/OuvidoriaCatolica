@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./login"; // Sua tela de login atual
+import Login from "./login"; 
 import User from "./pages/User/userPage";
 import Ticket from "./pages/User/ticketPage"
+import AttendantPage from "./pages/Attendant/attendantPage";
 
 // --- CONFIGURAÇÃO DAS ROTAS ---
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/user" element={<User />} />
         <Route path="/ticket" element={<Ticket />} />
+        <Route path="/attendant" element={<AttendantPage />} />
         
       </Routes>
     </BrowserRouter>
