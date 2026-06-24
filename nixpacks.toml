@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["curl", "bash", "libicu", "openssl", "zlib"]
+nixPkgs = ["curl"]
 
 [phases.install]
 cmds = [
