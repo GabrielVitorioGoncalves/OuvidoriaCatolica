@@ -3,6 +3,8 @@ import Login from "./login";
 import User from "./pages/User/userPage";
 import Ticket from "./pages/User/ticketPage"
 import AttendantPage from "./pages/Attendant/attendantPage";
+import TicketAdd from "./pages/User/ticketAdd"
+import TicketDetail from "./pages/User/ticketDetail"
 
 // --- CONFIGURAÇÃO DAS ROTAS ---
 export default function App() {
@@ -16,6 +18,8 @@ export default function App() {
         <Route path="/ticket" element={<Ticket />} />
         <Route path="/attendant" element={<AttendantPage />} />
         
+        <Route path="/ticketAdd" element={<TicketAdd />} />
+        <Route path="/ticketDetail/:id" element={<TicketDetail />} />
       </Routes>
     </BrowserRouter>
   );
