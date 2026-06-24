@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["dotnet restore OuvidoriaCatolica.sln"]
+
+[phases.build]
+cmds = ["dotnet publish src/OuvidoriaCatolica.API/OuvidoriaCatolica.API.csproj --no-restore -c Release -o out"]
+
+[start]
+cmd = "./out/OuvidoriaCatolica.API"
