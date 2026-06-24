@@ -244,8 +244,7 @@ export default function UserPage() {
   }
 
   function handleVerDetalhe(id: string) {
-    // Navegue para detalhe, ex: navigate(`/manifestacoes/${id}`)
-    alert(`Ver detalhe da manifestação ${id}`);
+      navigate(`/ticketDetail/${id}`); 
   }
 
   return (

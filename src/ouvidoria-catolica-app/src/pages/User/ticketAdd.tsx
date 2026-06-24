@@ -49,7 +49,7 @@ const fieldSx = {
 
 // ─── Componente principal ──────────────────────────────────────────────────────
 
-export default function Ticket() {
+export default function TicketSubmit() {
   const navigate = useNavigate();
   const [form, setForm] = useState<FormData>({
     categoria: "",
@@ -61,11 +61,6 @@ export default function Ticket() {
 
   function handleVoltar() {
     navigate("/user");
-  }
-
-  function handleCancelar() {
-    alert("Cancelar");
-    navigate("/user")
   }
 
   function handleCategoria(e: SelectChangeEvent) {
@@ -87,7 +82,7 @@ export default function Ticket() {
       // await api.post("/manifestacoes", form);
       await new Promise((r) => setTimeout(r, 1000));
       alert("Manifestação enviada com sucesso!");
-      // navigate("/manifestacoes");
+      navigate("/user");
     } finally {
       setEnviando(false);
     }
@@ -209,16 +204,6 @@ export default function Ticket() {
           spacing={2}
           sx={{ mt: 4, justifyContent:"flex-end" }}
         >
-          <Button
-            onClick={handleCancelar}
-            sx={{
-              color: "white",
-              textTransform: "none",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
-            }}
-          >
-            Cancelar
-          </Button>
 
           <Button
             variant="outlined"
