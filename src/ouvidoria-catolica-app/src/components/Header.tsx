@@ -13,7 +13,8 @@ export default function Header() {
         minHeight: "10vh",
         display: "flex",
         alignItems: "center",
-        bgcolor: "#141414",
+        bgcolor: "#16171d", // Atualizado para combinar com os cards
+        borderBottom: "1px solid #2e303a", // Linha sutil para separar do fundo
         px: { xs: 2, sm: 4, md: 8, lg: 24 },
       }}
     >
@@ -21,18 +22,25 @@ export default function Header() {
         <Chat
           sx={{ color: "white", fontSize: { xs: 20, sm: 28 } }}
         />
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: "bold", color: "white", whiteSpace: "nowrap" }}
-          >
-            Ouvidoria Digital
-          </Typography>
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: "bold", color: "white", whiteSpace: "nowrap" }}
+        >
+          Ouvidoria Digital
+        </Typography>
       </Stack>
 
-      <Button>
+      <Button
+        sx={{
+          textTransform: "none",
+          borderRadius: 2,
+          px: 1,
+          "&:hover": { bgcolor: "#1f2028" }, // Hover sutil padrão da paleta
+        }}
+      >
         <Stack
           direction="row"
-          spacing={1}
+          spacing={1.5}
           sx={{ alignItems: "center" }}
         >
           <Avatar sx={{ bgcolor: deepOrange[500], width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
@@ -40,11 +48,11 @@ export default function Header() {
           </Avatar>
 
           {!isMobile && (
-            <Stack spacing={-1}>
-              <Typography variant="subtitle2" sx={{ color: "white" }}>
+            <Stack spacing={0} alignItems="flex-start">
+              <Typography variant="subtitle2" sx={{ color: "white", fontWeight: 600 }}>
                 Nome usuário
               </Typography>
-              <Typography variant="body2" sx={{ color: "#909090" }}>
+              <Typography variant="body2" sx={{ color: "#9ca3af" }}>
                 Tipo usuário
               </Typography>
             </Stack>
