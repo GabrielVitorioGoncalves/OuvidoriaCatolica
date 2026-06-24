@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./login"; 
 import User from "./pages/User/userPage";
-import Ticket from "./pages/User/ticketPage"
+import Ticket from "./pages/User/ticketDetail";
 import AttendantPage from "./pages/Attendant/attendantPage";
 import TicketAdd from "./pages/User/ticketAdd"
 import TicketDetail from "./pages/User/ticketDetail"
