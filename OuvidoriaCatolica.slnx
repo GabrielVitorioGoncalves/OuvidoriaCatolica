@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OuvidoriaCatolica.API/OuvidoriaCatolica.API.csproj" />
+    <Project Path="src/OuvidoriaCatolica.Models/OuvidoriaCatolica.Models.csproj" />
+  </Folder>
+</Solution>
