@@ -1,12 +1,16 @@
 [phases.setup]
-nixPkgs = ["dotnet-sdk"]
-nixpkgsArchive = "nixpkgs-unstable"
+nixPkgs = ["curl", "bash", "libicu", "openssl", "zlib"]
 
 [phases.install]
-cmds = ["dotnet restore OuvidoriaCatolica.sln"]
+cmds = [
+  "curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0 --install-dir /opt/dotnet",
+  "export PATH=/opt/dotnet:$PATH && dotnet restore OuvidoriaCatolica.sln"
+]
 
 [phases.build]
-cmds = ["dotnet publish src/OuvidoriaCatolica.API/OuvidoriaCatolica.API.csproj --no-restore -c Release -o out"]
+cmds = [
+  "export PATH=/opt/dotnet:$PATH && dotnet publish src/OuvidoriaCatolica.API/OuvidoriaCatolica.API.csproj --no-restore -c Release -o out"
+]
 
 [start]
-cmd = "./out/OuvidoriaCatolica.API"
+cmd = "PATH=/opt/dotnet:$PATH ./out/OuvidoriaCatolica.API"
