@@ -1,5 +1,6 @@
 [phases.setup]
-nixPkgs = ["dotnet-sdk_10_0"]
+nixPkgs = ["dotnet-sdk"]
+nixpkgsArchive = "nixpkgs-unstable"
 
 [phases.install]
 cmds = ["dotnet restore OuvidoriaCatolica.sln"]
