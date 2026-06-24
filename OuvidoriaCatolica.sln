@@ -1,6 +1,14 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/OuvidoriaCatolica.API/OuvidoriaCatolica.API.csproj" />
-    <Project Path="src/OuvidoriaCatolica.Models/OuvidoriaCatolica.Models.csproj" />
-  </Folder>
-</Solution>
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
