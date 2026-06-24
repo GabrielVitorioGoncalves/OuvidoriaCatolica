@@ -3,6 +3,7 @@ nixPkgs = ["curl"]
 
 [phases.install]
 cmds = [
+  "apt-get update && apt-get install -y libicu-dev",
   "curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0 --install-dir /opt/dotnet",
   "export PATH=/opt/dotnet:$PATH && dotnet restore OuvidoriaCatolica.sln"
 ]
