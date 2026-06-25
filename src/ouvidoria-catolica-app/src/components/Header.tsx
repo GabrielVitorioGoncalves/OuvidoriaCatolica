@@ -48,7 +48,7 @@ export default function Header() {
           </Avatar>
 
           {!isMobile && (
-            <Stack spacing={0} alignItems="flex-start">
+            <Stack spacing={0} sx={{ alignItems: "flex-start" }}>
               <Typography variant="subtitle2" sx={{ color: "white", fontWeight: 600 }}>
                 Nome usuário
               </Typography>
