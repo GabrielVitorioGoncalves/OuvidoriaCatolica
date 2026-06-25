@@ -1,0 +1,114 @@
+using Microsoft.EntityFrameworkCore;
+using OuvidoriaCatolica.API.DTOs.User;
+using OuvidoriaCatolica.API.Services.Interfaces;
+using OuvidoriaCatolica.Models;
+
+namespace OuvidoriaCatolica.API.Services;
+
+public class UserService : IUserService
+{
+    private readonly AppDbContext _context;
+
+    public UserService(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
+    {
+        return await _context.Users
+            .Select(u => new UserResponseDto
+            {
+                UserID = u.UserID,
+                Email = u.Email,
+                Name = u.Name,
+                Role = u.Role,
+                Sector = u.Sector,
+                IsActive = u.IsActive
+            })
+            .ToListAsync();
+    }
+
+    public async Task<UserResponseDto?> GetByIdAsync(Guid id)
+    {
+        return await _context.Users
+            .Where(u => u.UserID == id)
+            .Select(u => new UserResponseDto
+            {
+                UserID = u.UserID,
+                Email = u.Email,
+                Name = u.Name,
+                Role = u.Role,
+                Sector = u.Sector,
+                IsActive = u.IsActive
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<UserResponseDto> CreateAsync(CreateUserDto dto, Guid currentUserId)
+    {
+        var user = new User(
+            dto.Email,
+            dto.Name,
+            dto.Role,
+            currentUserId,
+            dto.Sector
+        );
+
+        _context.Users.Add(user);
+
+        await _context.SaveChangesAsync();
+
+        return new UserResponseDto
+        {
+            UserID = user.UserID,
+            Email = user.Email,
+            Name = user.Name,
+            Role = user.Role,
+            Sector = user.Sector,
+            IsActive = user.IsActive
+        };
+    }
+
+    public async Task UpdateAsync(Guid id, UpdateUserDto dto, Guid currentUserId)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user is null)
+            throw new Exception("User not found");
+
+        user.UpdateUser(
+            dto.Email,
+            dto.Name,
+            dto.Role,
+            dto.Sector,
+            currentUserId
+        );
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ChangeStatusAsync(Guid id, bool isActive, Guid currentUserId)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user is null)
+            throw new Exception("User not found");
+
+        user.ChangeUserStatus(isActive, currentUserId);
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user is null)
+            throw new Exception("User not found");
+
+        _context.Users.Remove(user);
+
+        await _context.SaveChangesAsync();
+    }
+}
