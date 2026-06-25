@@ -21,7 +21,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // Em produção, mudar para true
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -67,6 +67,20 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        context.Database.Migrate(); 
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException("Ocorreu um erro ao aplicar as migrações do banco de dados.");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

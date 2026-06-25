@@ -246,7 +246,7 @@ export default function UserPage() {
   }, []);
 
   function handleNovaManifestacao() {
-    navigate("/ticket");
+    navigate("/ticketAdd");
   }
 
   function handleVerDetalhe(id: string) {
