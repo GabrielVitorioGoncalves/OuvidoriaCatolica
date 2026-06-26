@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Button, Skeleton, Stack, Typography } from "@mui/material";
 import { Add, ChevronRight, InboxOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,14 +31,13 @@ function calcularResumo(lista: TicketListaResponse[]): Resumo {
 
 // ─── Mapa de cores por status ─────────────────────────────────────────────────
 
-const statusColor: Record<
-  StatusManifestacao,
-  "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error"
-> = {
-  Aberta: "info",
-  Encaminhada: "secondary",
-  "Em atendimento": "warning",
-  Concluída: "success",
+const statusStyles: Record<string, { color: string; bg: string }> = {
+  Aberta: { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
+  "Em análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
+  "Em atendimento": { color: "#c7d2fe", bg: "rgba(199, 210, 254, 0.15)" },
+  Encaminhada: { color: "#d8b4fe", bg: "rgba(216, 180, 254, 0.15)" },
+  Respondida: { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
+  Concluída: { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
 };
 
 // ─── Subcomponentes ───────────────────────────────────────────────────────────
@@ -55,14 +54,14 @@ function CardResumo({
   return (
     <Box
       sx={{
-        bgcolor: "#181818",
+        bgcolor: "#16171d",
         borderRadius: 3,
         p: { xs: 2.5, sm: 3 },
         flex: 1,
         minWidth: 0,
       }}
     >
-      <Typography variant="body2" sx={{ color: "#909090", mb: 1 }}>
+      <Typography variant="body2" sx={{ color: "#9ca3af", mb: 1 }}>
         {label}
       </Typography>
       {loading ? (
@@ -70,7 +69,7 @@ function CardResumo({
           variant="text"
           width={40}
           height={48}
-          sx={{ bgcolor: "#3a3a3a" }}
+          sx={{ bgcolor: "#1f2028" }}
         />
       ) : (
         <Typography
@@ -95,7 +94,7 @@ function ItemManifestacao({
     <Box
       onClick={() => onClick(item.id)}
       sx={{
-        bgcolor: "#181818",
+        bgcolor: "#16171d",
         borderRadius: 3,
         px: { xs: 2, sm: 3 },
         py: 2,
@@ -105,16 +104,17 @@ function ItemManifestacao({
         gap: 2,
         cursor: "pointer",
         transition: "background-color 0.15s ease",
-        "&:hover": { bgcolor: "#333333" },
+        "&:hover": { bgcolor: "#1f2028" },
       }}
     >
       {/* Lado esquerdo */}
       <Box sx={{ minWidth: 0 }}>
         <Typography
           variant="caption"
-          sx={{ color: "#909090", display: "block", mb: 0.5 }}
+          sx={{ color: "#6b7280", display: "block", mb: 0.5 }}
         >
-          {item.protocolo}&nbsp;&nbsp;{item.tipo}
+          {item.protocolo} &nbsp;&nbsp;
+          <span style={{ color: "#9ca3af" }}>{item.tipo}</span>
         </Typography>
         <Typography
           variant="body1"
@@ -129,30 +129,12 @@ function ItemManifestacao({
         >
           {item.titulo}
         </Typography>
-        <Typography variant="caption" sx={{ color: "#909090" }}>
+        <Typography variant="caption" sx={{ color: "#6b7280" }}>
           Atualizada em {item.atualizadaEm}
         </Typography>
       </Box>
 
       {/* Lado direito */}
-<<<<<<< Updated upstream
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{
-          alignItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        <Chip
-          label={item.status}
-          color={statusColor[item.status]}
-          variant="outlined"
-          size="small"
-          sx={{ fontWeight: 500 }}
-        />
-        <ChevronRight sx={{ color: "#909090" }} />
-=======
       <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexShrink: 0 }}>
         <Box
           sx={{
@@ -168,7 +150,6 @@ function ItemManifestacao({
           {item.status}
         </Box>
         <ChevronRight sx={{ color: "#6b7280" }} />
->>>>>>> Stashed changes
       </Stack>
     </Box>
   );
@@ -181,15 +162,15 @@ function EstadoVazio() {
         textAlign: "center",
         py: 8,
         px: 2,
-        bgcolor: "#2a2a2a",
+        bgcolor: "#16171d",
         borderRadius: 3,
       }}
     >
-      <InboxOutlined sx={{ fontSize: 48, color: "#555", mb: 2 }} />
-      <Typography variant="body1" sx={{ color: "#909090" }}>
+      <InboxOutlined sx={{ fontSize: 48, color: "#6b7280", mb: 2 }} />
+      <Typography variant="body1" sx={{ color: "#9ca3af" }}>
         Você ainda não tem manifestações registradas.
       </Typography>
-      <Typography variant="body2" sx={{ color: "#555", mt: 0.5 }}>
+      <Typography variant="body2" sx={{ color: "#6b7280", mt: 0.5 }}>
         Clique em "Nova Manifestação" para começar.
       </Typography>
     </Box>
@@ -215,15 +196,11 @@ export default function UserPage() {
   }, []);
 
   function handleNovaManifestacao() {
-    navigate("/ticket")
+    navigate("/ticketAdd");
   }
 
   function handleVerDetalhe(id: string) {
-<<<<<<< Updated upstream
-      navigate(`/ticketDetail/${id}`); 
-=======
     navigate(`/ticketDetail/${id}`, { state: manifestacoes.find((m) => m.id === id) ?? null });
->>>>>>> Stashed changes
   }
 
   return (
@@ -232,7 +209,7 @@ export default function UserPage() {
       <Box
         sx={{
           minHeight: "90vh",
-          bgcolor: "#0A0A0A",
+          bgcolor: "#0a0a0a",
           px: { xs: 2, sm: 4, md: 8, lg: 16 },
           py: { xs: 4, sm: 6 },
         }}
@@ -251,7 +228,7 @@ export default function UserPage() {
             <Typography variant="h5" sx={{ color: "white", fontWeight: 700, mb: 0.5 }}>
               Minhas Manifestações
             </Typography>
-            <Typography variant="body2" sx={{ color: "#909090" }}>
+            <Typography variant="body2" sx={{ color: "#9ca3af" }}>
               Acompanhe o andamento das suas solicitações.
             </Typography>
           </Box>
@@ -262,21 +239,14 @@ export default function UserPage() {
             onClick={handleNovaManifestacao}
             sx={{
               color: "white",
-              borderColor: "white",
+              borderColor: "#2e303a",
               borderRadius: 6,
               px: 3,
               textTransform: "none",
               whiteSpace: "nowrap",
               flexShrink: 0,
-<<<<<<< Updated upstream
-              "&:hover": {
-                bgcolor: "rgba(255,255,255,0.08)",
-                borderColor: "white",
-              },
-=======
               bgcolor: "#16171d",
               "&:hover": { bgcolor: "#1f2028", borderColor: "#3a3d4a" },
->>>>>>> Stashed changes
             }}
           >
             Nova Manifestação
@@ -302,7 +272,7 @@ export default function UserPage() {
                 key={i}
                 variant="rounded"
                 height={90}
-                sx={{ bgcolor: "#2a2a2a", borderRadius: 3 }}
+                sx={{ bgcolor: "#16171d", borderRadius: 3 }}
               />
             ))}
           </Stack>
