@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -13,83 +13,21 @@ import {
   LocalOfferOutlined,
   CalendarTodayOutlined,
   PersonOutlined,
-  ArticleOutlined,
-  PersonAddOutlined,
   SendOutlined,
 } from "@mui/icons-material";
 import Header from "../../components/Header";
+import {
+  TicketService,
+  type TicketListaResponse,
+  type TicketRespostaResponse,
+} from "../../services/TicketService";
+import { httpClient } from "../../infra/AxiosAdapter";
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
+// ─── Instância do service ─────────────────────────────────────────────────────
 
-type StatusManifestacao =
-  | "Aberta"
-  | "Encaminhada"
-  | "Em atendimento"
-  | "Concluída";
+const ticketService = new TicketService(httpClient);
 
-interface EventoHistorico {
-  id: string;
-  tipo: "registro" | "atendimento" | "resposta";
-  titulo: string;
-  autor: string;
-  data: string;
-  mensagem?: string; // só para tipo "resposta"
-}
-
-interface DetalheManifestacaoData {
-  protocolo: string;
-  titulo: string;
-  status: StatusManifestacao;
-  categoria: string;
-  abertura: string;
-  responsavel: string;
-  descricao: string;
-  historico: EventoHistorico[];
-}
-
-// ─── Mock de API ───────────────────────────────────────────────────────────────
-
-async function fetchDetalhe(id: string): Promise<DetalheManifestacaoData> {
-  await new Promise((r) => setTimeout(r, 900));
-  console.log("Buscando manifestação:", id);
-  return {
-    protocolo: "#2025-000123",
-    titulo: "Buraco na via principal do bairro Centro",
-    status: "Em atendimento",
-    categoria: "Reclamação",
-    abertura: "28/05/2025, 11:20",
-    responsavel: "Diego Martins",
-    descricao:
-      "Há um buraco grande na Rua das Flores que está causando risco de acidentes. Já vi dois carros danificarem os pneus na última semana.",
-    historico: [
-      {
-        id: "1",
-        tipo: "registro",
-        titulo: "Manifestação registrada",
-        autor: "Ana Souza",
-        data: "28/05/2025, 11:20",
-      },
-      {
-        id: "2",
-        tipo: "atendimento",
-        titulo: "Atendimento assumido por Diego Martins",
-        autor: "Diego Martins",
-        data: "30/05/2025, 06:10",
-      },
-      {
-        id: "3",
-        tipo: "resposta",
-        titulo: "Resposta enviada ao cidadão",
-        autor: "Diego Martins",
-        data: "02/06/2025, 07:00",
-        mensagem:
-          "Olá Ana, recebemos sua solicitação e uma equipe foi designada para avaliar o local nesta semana. Agradecemos o registro.",
-      },
-    ],
-  };
-}
-
-// ─── Mapa de cores por status ──────────────────────────────────────────────────
+// ─── Mapa de cores por status ─────────────────────────────────────────────────
 
 const statusStyles: Record<string, { color: string; bg: string }> = {
   Aberta: { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
@@ -100,16 +38,7 @@ const statusStyles: Record<string, { color: string; bg: string }> = {
   Concluída: { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
 };
 
-// ─── Ícone por tipo de evento ──────────────────────────────────────────────────
-
-function IconeEvento({ tipo }: { tipo: EventoHistorico["tipo"] }) {
-  const sx = { fontSize: 20, color: "#9ca3af" };
-  if (tipo === "registro") return <ArticleOutlined sx={sx} />;
-  if (tipo === "atendimento") return <PersonAddOutlined sx={sx} />;
-  return <SendOutlined sx={sx} />;
-}
-
-// ─── Subcomponentes ────────────────────────────────────────────────────────────
+// ─── Subcomponentes ───────────────────────────────────────────────────────────
 
 function InfoItem({
   icon,
@@ -143,18 +72,26 @@ function CardSecao({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Componente principal ──────────────────────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function DetalheManifestacao() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [dados, setDados] = useState<DetalheManifestacaoData | null>(null);
+
+  // Dados básicos do ticket vêm via navigation state (já carregados na UserPage)
+  const location = useLocation();
+  const ticketBase = location.state as TicketListaResponse | null;
+
+  const [respostas, setRespostas] = useState<TicketRespostaResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    fetchDetalhe(id)
-      .then(setDados)
+    ticketService
+      .buscarRespostas(id)
+      .then(setRespostas)
+      .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -184,26 +121,22 @@ export default function DetalheManifestacao() {
           Voltar
         </Button>
 
-        {loading ? (
-          <Stack spacing={2}>
-            <Skeleton variant="text" width={200} height={24} sx={{ bgcolor: "#16171d" }} />
-            <Skeleton variant="text" width="60%" height={48} sx={{ bgcolor: "#16171d" }} />
-            <Skeleton variant="rounded" height={120} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
-            <Skeleton variant="rounded" height={120} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
-            <Skeleton variant="rounded" height={200} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
-          </Stack>
-        ) : dados ? (
+        {!ticketBase ? (
+          <Typography sx={{ color: "#f87171" }}>
+            Manifestação não encontrada.
+          </Typography>
+        ) : (
           <Stack spacing={3}>
             {/* Cabeçalho */}
             <Box>
               <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                  Protocolo {dados.protocolo}
+                  Protocolo {ticketBase.protocolo}
                 </Typography>
                 <Box
                   sx={{
-                    bgcolor: statusStyles[dados.status]?.bg || "#333",
-                    color: statusStyles[dados.status]?.color || "#fff",
+                    bgcolor: statusStyles[ticketBase.status]?.bg || "#333",
+                    color: statusStyles[ticketBase.status]?.color || "#fff",
                     px: 1.5,
                     py: 0.25,
                     borderRadius: "16px",
@@ -211,11 +144,11 @@ export default function DetalheManifestacao() {
                     fontWeight: 600,
                   }}
                 >
-                  {dados.status}
+                  {ticketBase.status}
                 </Box>
               </Stack>
               <Typography variant="h4" sx={{ color: "white", fontWeight: 700 }}>
-                {dados.titulo}
+                {ticketBase.titulo}
               </Typography>
             </Box>
 
@@ -235,72 +168,71 @@ export default function DetalheManifestacao() {
                 <InfoItem
                   icon={<LocalOfferOutlined fontSize="small" />}
                   label="Categoria"
-                  value={dados.categoria}
+                  value={ticketBase.tipo}
                 />
                 <InfoItem
                   icon={<CalendarTodayOutlined fontSize="small" />}
-                  label="Abertura"
-                  value={dados.abertura}
+                  label="Última atualização"
+                  value={ticketBase.atualizadaEm}
                 />
                 <InfoItem
                   icon={<PersonOutlined fontSize="small" />}
-                  label="Responsável"
-                  value={dados.responsavel}
+                  label="Status"
+                  value={ticketBase.status}
                 />
               </Stack>
             </CardSecao>
 
-            {/* Descrição */}
-            <CardSecao>
-              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 1.5 }}>
-                Descrição
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>
-                {dados.descricao}
-              </Typography>
-            </CardSecao>
-
-            {/* Histórico */}
+            {/* Respostas */}
             <CardSecao>
               <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 2.5 }}>
-                Histórico e respostas
+                Respostas
               </Typography>
 
-              <Stack spacing={0}>
-                {dados.historico.map((evento, index) => (
-                  <Box key={evento.id}>
-                    <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                      {/* Ícone */}
-                      <Box
-                        sx={{
-                          bgcolor: "#1f2028",
-                          borderRadius: "50%",
-                          width: 36,
-                          height: 36,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          mt: 0.3,
-                        }}
-                      >
-                        <IconeEvento tipo={evento.tipo} />
-                      </Box>
+              {loading ? (
+                <Stack spacing={2}>
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} variant="rounded" height={80} sx={{ bgcolor: "#1f2028", borderRadius: 2 }} />
+                  ))}
+                </Stack>
+              ) : erro ? (
+                <Typography variant="body2" sx={{ color: "#f87171" }}>
+                  Erro ao carregar respostas. Tente novamente mais tarde.
+                </Typography>
+              ) : respostas.length === 0 ? (
+                <Typography variant="body2" sx={{ color: "#6b7280" }}>
+                  Nenhuma resposta ainda.
+                </Typography>
+              ) : (
+                <Stack spacing={0}>
+                  {respostas.map((resposta, index) => (
+                    <Box key={resposta.id}>
+                      <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+                        {/* Ícone */}
+                        <Box
+                          sx={{
+                            bgcolor: "#1f2028",
+                            borderRadius: "50%",
+                            width: 36,
+                            height: 36,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            mt: 0.3,
+                          }}
+                        >
+                          <SendOutlined sx={{ fontSize: 20, color: "#9ca3af" }} />
+                        </Box>
 
-                      {/* Conteúdo */}
-                      <Box sx={{ flex: 1, pb: index < dados.historico.length - 1 ? 3 : 0 }}>
-                        <Typography variant="body2" sx={{ color: "white", fontWeight: 600 }}>
-                          {evento.titulo}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                          {evento.autor} · {evento.data}
-                        </Typography>
-
-                        {/* Mensagem de resposta */}
-                        {evento.mensagem && (
+                        {/* Conteúdo */}
+                        <Box sx={{ flex: 1, pb: index < respostas.length - 1 ? 3 : 0 }}>
+                          <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                            {resposta.autor} · {resposta.criadoEm}
+                          </Typography>
                           <Box
                             sx={{
-                              mt: 1.5,
+                              mt: 1,
                               p: 2,
                               bgcolor: "#1f2028",
                               borderRadius: 2,
@@ -308,24 +240,21 @@ export default function DetalheManifestacao() {
                             }}
                           >
                             <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>
-                              {evento.mensagem}
+                              {resposta.mensagem}
                             </Typography>
                           </Box>
-                        )}
-                      </Box>
-                    </Stack>
+                        </Box>
+                      </Stack>
 
-                    {/* Divisor entre eventos */}
-                    {index < dados.historico.length - 1 && (
-                      <Divider sx={{ borderColor: "#2e303a", ml: 6.5, mb: 3, mt: -1.5 }} />
-                    )}
-                  </Box>
-                ))}
-              </Stack>
+                      {index < respostas.length - 1 && (
+                        <Divider sx={{ borderColor: "#2e303a", ml: 6.5, mb: 3, mt: -1.5 }} />
+                      )}
+                    </Box>
+                  ))}
+                </Stack>
+              )}
             </CardSecao>
           </Stack>
-        ) : (
-          <Typography sx={{ color: "#9ca3af" }}>Manifestação não encontrada.</Typography>
         )}
       </Box>
     </div>
