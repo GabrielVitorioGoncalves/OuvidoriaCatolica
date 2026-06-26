@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -20,12 +21,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErro("");
-
-    console.log("DADOS INDO PRO BACK:", { email: email, password: senha });
 
     try {
       if (isPrimeiroAcesso) {
@@ -35,8 +36,17 @@ export default function Login() {
         setSenha("");
       } else {
         const resposta = await authService.login({ email: email, password: senha });
+        
         localStorage.setItem('@Ouvidoria:token', resposta.token);
-        alert('Login feito com sucesso!');
+        localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
+
+        if (resposta.user.role === 3) {
+          navigate('/user'); 
+        } else if (resposta.user.role === 2) {
+          navigate('/attendant'); 
+        } else {
+          navigate('/user'); 
+        }
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
