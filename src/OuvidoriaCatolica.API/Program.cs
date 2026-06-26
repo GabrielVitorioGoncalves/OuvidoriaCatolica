@@ -78,7 +78,9 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        throw new InvalidOperationException("Ocorreu um erro ao aplicar as migrações do banco de dados.");
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocorreu um erro fatal ao aplicar as migrações do banco de dados.");
+        throw; 
     }
 }
 
