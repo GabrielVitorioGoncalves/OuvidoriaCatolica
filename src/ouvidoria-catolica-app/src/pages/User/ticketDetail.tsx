@@ -18,28 +18,49 @@ import {
 import Header from "../../components/Header";
 import {
   TicketService,
+  TicketStatus,
+  Sector,
   type TicketListaResponse,
   type TicketRespostaResponse,
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
 
-// ─── Instância do service ─────────────────────────────────────────────────────
+// ─── Formatadores (C# -> Tela) ────────────────────────────────────────────────
+const formatarSetor = (sectorId: number | undefined) => {
+  switch(sectorId) {
+    case Sector.GeneralService: return "Serviços Gerais";
+    case Sector.Financial: return "Financeiro";
+    case Sector.Infrastructure: return "Infraestrutura";
+    case Sector.HumanResources: return "Recursos Humanos";
+    case Sector.Health: return "Saúde";
+    case Sector.Education: return "Educação";
+    default: return "Outros";
+  }
+};
 
+const formatarStatus = (statusId: number | undefined) => {
+  switch(statusId) {
+    case TicketStatus.New: return "Aberta";
+    case TicketStatus.InReview: return "Em Análise";
+    case TicketStatus.AwaitingResponse: return "Aguardando Resposta";
+    case TicketStatus.Closed: return "Concluída";
+    default: return "Desconhecido";
+  }
+};
+
+// ─── Instância do service ─────────────────────────────────────────────────────
 const ticketService = new TicketService(httpClient);
 
 // ─── Mapa de cores por status ─────────────────────────────────────────────────
-
 const statusStyles: Record<string, { color: string; bg: string }> = {
-  Aberta: { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
-  "Em análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
-  "Em atendimento": { color: "#c7d2fe", bg: "rgba(199, 210, 254, 0.15)" },
-  Encaminhada: { color: "#d8b4fe", bg: "rgba(216, 180, 254, 0.15)" },
-  Respondida: { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
-  Concluída: { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
+  "Aberta": { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
+  "Em Análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
+  "Aguardando Resposta": { color: "#c7d2fe", bg: "rgba(199, 210, 254, 0.15)" },
+  "Concluída": { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
+  "Desconhecido": { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
 };
 
 // ─── Subcomponentes ───────────────────────────────────────────────────────────
-
 function InfoItem({
   icon,
   label,
@@ -73,15 +94,13 @@ function CardSecao({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-
 export default function DetalheManifestacao() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  
   // Dados básicos do ticket vêm via navigation state (já carregados na UserPage)
   const location = useLocation();
   const ticketBase = location.state as TicketListaResponse | null;
-
   const [respostas, setRespostas] = useState<TicketRespostaResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
@@ -94,6 +113,9 @@ export default function DetalheManifestacao() {
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const statusFormatado = ticketBase ? formatarStatus(ticketBase.status) : "Desconhecido";
+  const protocoloGerado = ticketBase?.ticketID ? ticketBase.ticketID.substring(0, 8).toUpperCase() : "N/A";
 
   return (
     <div>
@@ -131,12 +153,12 @@ export default function DetalheManifestacao() {
             <Box>
               <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                  Protocolo {ticketBase.protocolo}
+                  Protocolo {protocoloGerado}
                 </Typography>
                 <Box
                   sx={{
-                    bgcolor: statusStyles[ticketBase.status]?.bg || "#333",
-                    color: statusStyles[ticketBase.status]?.color || "#fff",
+                    bgcolor: statusStyles[statusFormatado]?.bg || "#333",
+                    color: statusStyles[statusFormatado]?.color || "#fff",
                     px: 1.5,
                     py: 0.25,
                     borderRadius: "16px",
@@ -144,11 +166,11 @@ export default function DetalheManifestacao() {
                     fontWeight: 600,
                   }}
                 >
-                  {ticketBase.status}
+                  {statusFormatado}
                 </Box>
               </Stack>
               <Typography variant="h4" sx={{ color: "white", fontWeight: 700 }}>
-                {ticketBase.titulo}
+                {ticketBase.title}
               </Typography>
             </Box>
 
@@ -167,18 +189,18 @@ export default function DetalheManifestacao() {
               >
                 <InfoItem
                   icon={<LocalOfferOutlined fontSize="small" />}
-                  label="Categoria"
-                  value={ticketBase.tipo}
+                  label="Setor"
+                  value={formatarSetor(ticketBase.sector)}
                 />
                 <InfoItem
                   icon={<CalendarTodayOutlined fontSize="small" />}
                   label="Última atualização"
-                  value={ticketBase.atualizadaEm}
+                  value={new Date(ticketBase.createdAt).toLocaleDateString('pt-BR')}
                 />
                 <InfoItem
                   icon={<PersonOutlined fontSize="small" />}
                   label="Status"
-                  value={ticketBase.status}
+                  value={statusFormatado}
                 />
               </Stack>
             </CardSecao>
@@ -206,7 +228,7 @@ export default function DetalheManifestacao() {
               ) : (
                 <Stack spacing={0}>
                   {respostas.map((resposta, index) => (
-                    <Box key={resposta.id}>
+                    <Box key={resposta.responseID}>
                       <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
                         {/* Ícone */}
                         <Box
@@ -224,11 +246,10 @@ export default function DetalheManifestacao() {
                         >
                           <SendOutlined sx={{ fontSize: 20, color: "#9ca3af" }} />
                         </Box>
-
                         {/* Conteúdo */}
                         <Box sx={{ flex: 1, pb: index < respostas.length - 1 ? 3 : 0 }}>
                           <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                            {resposta.autor} · {resposta.criadoEm}
+                            {resposta.responsibleAttendant} · {new Date(resposta.respondedAt).toLocaleDateString('pt-BR')}
                           </Typography>
                           <Box
                             sx={{
@@ -240,12 +261,11 @@ export default function DetalheManifestacao() {
                             }}
                           >
                             <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>
-                              {resposta.mensagem}
+                              {resposta.message}
                             </Typography>
                           </Box>
                         </Box>
                       </Stack>
-
                       {index < respostas.length - 1 && (
                         <Divider sx={{ borderColor: "#2e303a", ml: 6.5, mb: 3, mt: -1.5 }} />
                       )}
