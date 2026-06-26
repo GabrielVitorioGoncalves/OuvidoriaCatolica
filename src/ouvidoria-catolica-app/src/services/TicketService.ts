@@ -1,55 +1,62 @@
 // src/services/TicketService.ts
 import type { HttpClient } from '../infra/HttpClient';
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
+// ─── Tipos (Adaptados para o Vite / erasableSyntaxOnly) ──────────────────────
 
-export type Categoria =
-  | 'Reclamação'
-  | 'Sugestão'
-  | 'Elogio'
-  | 'Denúncia'
-  | 'Solicitação'
-  | 'Outros';
+export const Sector = {
+  GeneralService: 1,
+  Financial: 2,
+  Infrastructure: 3,
+  HumanResources: 4,
+  Health: 5,
+  Education: 6
+} as const;
 
-export type StatusTicket =
-  | 'Aberta'
-  | 'Encaminhada'
-  | 'Em atendimento'
-  | 'Concluída';
+// Isso cria o tipo que o TypeScript precisa, sem gerar erro no Vite
+export type SectorType = typeof Sector[keyof typeof Sector];
 
+export const TicketStatus = {
+  New: 1,
+  InReview: 2,
+  AwaitingResponse: 3,
+  Closed: 4
+} as const;
+
+export type TicketStatusType = typeof TicketStatus[keyof typeof TicketStatus];
+
+// Os nomes das propriedades devem bater exatamente com o DTO/Model do C#
 export interface CriarTicketDTO {
-  categoria: Categoria;
-  titulo: string;
-  descricao: string;
+  title: string;
+  description: string;
+  sector: SectorType; // Usamos o tipo criado acima
 }
 
 // Retorno da listagem — GET /api/tickets/my-tickets
 export interface TicketListaResponse {
-  id: string;
-  protocolo: string;
-  tipo: string;
-  titulo: string;
-  atualizadaEm: string;
-  status: StatusTicket;
+  ticketID: string; 
+  title: string;
+  description: string;
+  sector: SectorType;
+  status: TicketStatusType;
+  createdAt: string;
 }
 
 // Retorno da criação — POST /api/tickets
 export interface TicketCriadoResponse {
-  id: string;
-  protocolo: string;
-  categoria: Categoria;
-  titulo: string;
-  descricao: string;
-  status: StatusTicket;
-  criadoEm: string;
+  ticketID: string;
+  title: string;
+  description: string;
+  sector: SectorType;
+  status: TicketStatusType;
+  createdAt: string;
 }
 
 // Retorno das respostas — GET /api/tickets/{id}/responses
 export interface TicketRespostaResponse {
-  id: string;
-  mensagem: string;
-  autor: string;
-  criadoEm: string;
+  responseID: string;
+  message: string;
+  responsibleAttendant: string;
+  respondedAt: string;
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -61,17 +68,14 @@ export class TicketService {
     this.http = http;
   }
 
-  // POST /api/tickets — cria uma nova manifestação (Role: Common)
   async criar(dados: CriarTicketDTO): Promise<TicketCriadoResponse> {
     return this.http.post<TicketCriadoResponse>('/api/tickets', dados);
   }
 
-  // GET /api/tickets/my-tickets — lista tickets do usuário logado (Role: Common)
   async listar(): Promise<TicketListaResponse[]> {
     return this.http.get<TicketListaResponse[]>('/api/tickets/my-tickets');
   }
 
-  // GET /api/tickets/{id}/responses — respostas de um ticket (Role: Authorize)
   async buscarRespostas(id: string): Promise<TicketRespostaResponse[]> {
     return this.http.get<TicketRespostaResponse[]>(`/api/tickets/${id}/responses`);
   }

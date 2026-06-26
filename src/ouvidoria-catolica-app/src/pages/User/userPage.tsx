@@ -5,16 +5,39 @@ import { Add, ChevronRight, InboxOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import {
   TicketService,
+  TicketStatus,
+  Sector,
   type TicketListaResponse,
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
 
-// ─── Instância do service ─────────────────────────────────────────────────────
+// ─── Formatadores (C# -> Tela) ────────────────────────────────────────────────
+const formatarSetor = (sectorId: number | undefined) => {
+  switch(sectorId) {
+    case Sector.GeneralService: return "Serviços Gerais";
+    case Sector.Financial: return "Financeiro";
+    case Sector.Infrastructure: return "Infraestrutura";
+    case Sector.HumanResources: return "Recursos Humanos";
+    case Sector.Health: return "Saúde";
+    case Sector.Education: return "Educação";
+    default: return "Outros";
+  }
+};
 
+const formatarStatus = (statusId: number | undefined) => {
+  switch(statusId) {
+    case TicketStatus.New: return "Aberta";
+    case TicketStatus.InReview: return "Em Análise";
+    case TicketStatus.AwaitingResponse: return "Aguardando Resposta";
+    case TicketStatus.Closed: return "Concluída";
+    default: return "Desconhecido";
+  }
+};
+
+// ─── Instância do service ─────────────────────────────────────────────────────
 const ticketService = new TicketService(httpClient);
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
-
 interface Resumo {
   total: number;
   emAndamento: number;
@@ -24,24 +47,23 @@ interface Resumo {
 function calcularResumo(lista: TicketListaResponse[]): Resumo {
   return {
     total: lista.length,
-    emAndamento: lista.filter((t) => t.status !== "Concluída").length,
-    concluidas: lista.filter((t) => t.status === "Concluída").length,
+    // Compara diretamente com o número do Enum do C#
+    emAndamento: lista.filter((t) => t.status !== TicketStatus.Closed).length,
+    concluidas: lista.filter((t) => t.status === TicketStatus.Closed).length,
   };
 }
 
 // ─── Mapa de cores por status ─────────────────────────────────────────────────
-
+// Ajustado para bater exatamente com o texto retornado pelo formatarStatus
 const statusStyles: Record<string, { color: string; bg: string }> = {
-  Aberta: { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
-  "Em análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
-  "Em atendimento": { color: "#c7d2fe", bg: "rgba(199, 210, 254, 0.15)" },
-  Encaminhada: { color: "#d8b4fe", bg: "rgba(216, 180, 254, 0.15)" },
-  Respondida: { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
-  Concluída: { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
+  "Aberta": { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
+  "Em Análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
+  "Aguardando Resposta": { color: "#c7d2fe", bg: "rgba(199, 210, 254, 0.15)" },
+  "Concluída": { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
+  "Desconhecido": { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
 };
 
 // ─── Subcomponentes ───────────────────────────────────────────────────────────
-
 function CardResumo({
   label,
   value,
@@ -90,9 +112,13 @@ function ItemManifestacao({
   item: TicketListaResponse;
   onClick: (id: string) => void;
 }) {
+  const statusFormatado = formatarStatus(item.status);
+  // Simula um número de protocolo pegando os primeiros 8 caracteres do Guid
+  const protocoloGerado = item.ticketID ? item.ticketID.substring(0, 8).toUpperCase() : "N/A";
+
   return (
     <Box
-      onClick={() => onClick(item.id)}
+      onClick={() => onClick(item.ticketID)}
       sx={{
         bgcolor: "#16171d",
         borderRadius: 3,
@@ -113,8 +139,8 @@ function ItemManifestacao({
           variant="caption"
           sx={{ color: "#6b7280", display: "block", mb: 0.5 }}
         >
-          {item.protocolo} &nbsp;&nbsp;
-          <span style={{ color: "#9ca3af" }}>{item.tipo}</span>
+          {protocoloGerado} &nbsp;&nbsp;
+          <span style={{ color: "#9ca3af" }}>{formatarSetor(item.sector)}</span>
         </Typography>
         <Typography
           variant="body1"
@@ -127,10 +153,10 @@ function ItemManifestacao({
             whiteSpace: { xs: "normal", sm: "nowrap" },
           }}
         >
-          {item.titulo}
+          {item.title}
         </Typography>
         <Typography variant="caption" sx={{ color: "#6b7280" }}>
-          Atualizada em {item.atualizadaEm}
+          Criado em {new Date(item.createdAt).toLocaleDateString('pt-BR')}
         </Typography>
       </Box>
 
@@ -138,8 +164,8 @@ function ItemManifestacao({
       <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexShrink: 0 }}>
         <Box
           sx={{
-            bgcolor: statusStyles[item.status]?.bg || "#333",
-            color: statusStyles[item.status]?.color || "#fff",
+            bgcolor: statusStyles[statusFormatado]?.bg || "#333",
+            color: statusStyles[statusFormatado]?.color || "#fff",
             px: 1.5,
             py: 0.25,
             borderRadius: "16px",
@@ -147,7 +173,7 @@ function ItemManifestacao({
             fontWeight: 600,
           }}
         >
-          {item.status}
+          {statusFormatado}
         </Box>
         <ChevronRight sx={{ color: "#6b7280" }} />
       </Stack>
@@ -178,7 +204,6 @@ function EstadoVazio() {
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-
 export default function UserPage() {
   const navigate = useNavigate();
   const [manifestacoes, setManifestacoes] = useState<TicketListaResponse[]>([]);
@@ -200,7 +225,7 @@ export default function UserPage() {
   }
 
   function handleVerDetalhe(id: string) {
-    navigate(`/ticketDetail/${id}`, { state: manifestacoes.find((m) => m.id === id) ?? null });
+    navigate(`/ticketDetail/${id}`, { state: manifestacoes.find((m) => m.ticketID === id) ?? null });
   }
 
   return (
@@ -232,7 +257,6 @@ export default function UserPage() {
               Acompanhe o andamento das suas solicitações.
             </Typography>
           </Box>
-
           <Button
             variant="outlined"
             startIcon={<Add />}
@@ -281,7 +305,7 @@ export default function UserPage() {
         ) : (
           <Stack spacing={2}>
             {manifestacoes.map((item) => (
-              <ItemManifestacao key={item.id} item={item} onClick={handleVerDetalhe} />
+              <ItemManifestacao key={item.ticketID} item={item} onClick={handleVerDetalhe} />
             ))}
           </Stack>
         )}
