@@ -16,20 +16,30 @@ import {
 import { ArrowBack } from "@mui/icons-material";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
-import { TicketService, type Categoria, type CriarTicketDTO } from "../../services/TicketService";
+// IMPORTAÇÃO CORRIGIDA PARA PEGAR O SECTOR DO SEU SERVICE
+import { TicketService, Sector, type SectorType, type CriarTicketDTO } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
-
-// ─── Instância do service ─────────────────────────────────────────────────────
 
 const ticketService = new TicketService(httpClient);
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 interface FormData {
-  categoria: Categoria | "";
+  sector: SectorType | ""; // Mudei de 'Sector' para 'SectorType'
   titulo: string;
   descricao: string;
 }
+
+// ─── Dicionário de Setores para a Tela ────────────────────────────────────────
+// Isso converte os números do seu C# para textos amigáveis na tela
+const setores = [
+  { id: Sector.GeneralService, nome: "Serviços Gerais" },
+  { id: Sector.Financial, nome: "Financeiro" },
+  { id: Sector.Infrastructure, nome: "Infraestrutura" },
+  { id: Sector.HumanResources, nome: "Recursos Humanos" },
+  { id: Sector.Health, nome: "Saúde" },
+  { id: Sector.Education, nome: "Educação" },
+];
 
 // ─── Estilos padronizados ─────────────────────────────────────────────────────
 
@@ -52,7 +62,7 @@ export default function TicketAdd() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<FormData>({
-    categoria: "",
+    sector: "",
     titulo: "",
     descricao: "",
   });
@@ -68,10 +78,10 @@ export default function TicketAdd() {
     navigate("/user");
   }
 
-  function handleCategoria(e: SelectChangeEvent) {
-    setForm((prev) => ({ ...prev, categoria: e.target.value as Categoria }));
+  // ATUALIZADO PARA LIDAR COM NÚMEROS DO ENUM
+  function handleSector(e: SelectChangeEvent) {
+    setForm((prev) => ({ ...prev, sector: Number(e.target.value) as SectorType }));
   }
-
   function handleChange(field: keyof FormData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -87,10 +97,11 @@ export default function TicketAdd() {
 
     setEnviando(true);
     try {
-      const payload: CriarTicketDTO = {
-        categoria: form.categoria as Categoria,
-        titulo: form.titulo.trim(),
-        descricao: form.descricao.trim(),
+      // O PAYLOAD AGORA FALA O MESMO IDIOMA DO C# (title, description, sector)
+     const payload: CriarTicketDTO = {
+        sector: form.sector as SectorType, // <-- O SEGREDO ESTÁ AQUI
+        title: form.titulo.trim(),
+        description: form.descricao.trim(),
       };
 
       await ticketService.criar(payload);
@@ -114,7 +125,7 @@ export default function TicketAdd() {
   }
 
   const formValido =
-    form.categoria !== "" &&
+    form.sector !== "" &&
     form.titulo.trim() !== "" &&
     form.descricao.trim() !== "";
 
@@ -163,13 +174,13 @@ export default function TicketAdd() {
             </Typography>
 
             <Stack spacing={3}>
-              {/* Categoria */}
+              {/* Setor */}
               <FormControl fullWidth sx={fieldSx}>
-                <InputLabel>Selecione a categoria</InputLabel>
+                <InputLabel>Selecione o setor responsável</InputLabel>
                 <Select
-                  value={form.categoria}
-                  label="Selecione a categoria"
-                  onChange={handleCategoria}
+                  value={form.sector.toString()} // Converte para string pro Select não reclamar
+                  label="Selecione o setor responsável"
+                  onChange={handleSector}
                   MenuProps={{
                     slotProps: {
                       paper: {
@@ -178,13 +189,11 @@ export default function TicketAdd() {
                     },
                   }}
                 >
-                  {(["Reclamação", "Sugestão", "Elogio", "Denúncia", "Solicitação", "Outros"] as Categoria[]).map(
-                    (cat) => (
-                      <MenuItem key={cat} value={cat} sx={{ "&:hover": { bgcolor: "#1f2028" } }}>
-                        {cat}
-                      </MenuItem>
-                    )
-                  )}
+                  {setores.map((setor) => (
+                    <MenuItem key={setor.id} value={setor.id} sx={{ "&:hover": { bgcolor: "#1f2028" } }}>
+                      {setor.nome}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
 
