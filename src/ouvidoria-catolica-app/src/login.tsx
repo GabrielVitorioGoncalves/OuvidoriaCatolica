@@ -41,7 +41,7 @@ export default function Login() {
         localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
 
         if (resposta.user.role === 3) {
-          navigate('/user'); 
+          navigate('/admin'); 
         } else if (resposta.user.role === 2) {
           navigate('/attendant'); 
         } else {
