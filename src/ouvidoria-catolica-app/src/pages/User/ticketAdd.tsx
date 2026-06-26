@@ -9,6 +9,7 @@ import {
   Typography,
   FormControl,
   InputLabel,
+  type SelectChangeEvent
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import Header from "../../components/Header";
