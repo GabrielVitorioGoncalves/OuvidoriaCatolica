@@ -3,23 +3,17 @@ import Header from "../../components/Header";
 import { Box, Button, Skeleton, Stack, Typography } from "@mui/material";
 import { Add, ChevronRight, InboxOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import {
+  TicketService,
+  type TicketListaResponse,
+} from "../../services/TicketService";
+import { httpClient } from "../../infra/AxiosAdapter";
+
+// ─── Instância do service ─────────────────────────────────────────────────────
+
+const ticketService = new TicketService(httpClient);
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
-
-type StatusManifestacao =
-  | "Aberta"
-  | "Encaminhada"
-  | "Em atendimento"
-  | "Concluída";
-
-interface Manifestacao {
-  id: string;
-  protocolo: string;
-  tipo: string;
-  titulo: string;
-  atualizadaEm: string;
-  status: StatusManifestacao;
-}
 
 interface Resumo {
   total: number;
@@ -27,51 +21,15 @@ interface Resumo {
   concluidas: number;
 }
 
-// ─── Mock de API ────────────────────────────────
-
-async function fetchResumo(): Promise<Resumo> {
-  return { total: 3, emAndamento: 3, concluidas: 0 };
+function calcularResumo(lista: TicketListaResponse[]): Resumo {
+  return {
+    total: lista.length,
+    emAndamento: lista.filter((t) => t.status !== "Concluída").length,
+    concluidas: lista.filter((t) => t.status === "Concluída").length,
+  };
 }
 
-async function fetchManifestacoes(): Promise<Manifestacao[]> {
-  await new Promise((r) => setTimeout(r, 1000));
-  return [
-    {
-      id: "1",
-      protocolo: "#2025-000124",
-      tipo: "Sugestão",
-      titulo: "Sugestão de horário estendido na biblioteca",
-      atualizadaEm: "05/06/2025",
-      status: "Concluída",
-    },
-    {
-      id: "2",
-      protocolo: "#2025-000127",
-      tipo: "Solicitação",
-      titulo: "Solicitação de poda de árvore",
-      atualizadaEm: "04/06/2025",
-      status: "Encaminhada",
-    },
-    {
-      id: "3",
-      protocolo: "#2025-000123",
-      tipo: "Reclamação",
-      titulo: "Buraco na via principal do bairro Centro",
-      atualizadaEm: "02/06/2025",
-      status: "Em atendimento",
-    },
-    {
-      id: "4",
-      protocolo: "#2025-000123",
-      tipo: "Reclamação",
-      titulo: "Buraco na via principal do bairro Centro",
-      atualizadaEm: "02/06/2025",
-      status: "Concluída",
-    },
-  ];
-}
-
-// ─── Mapa de cores por status ──────────────────────────────────────────────────
+// ─── Mapa de cores por status ─────────────────────────────────────────────────
 
 const statusStyles: Record<string, { color: string; bg: string }> = {
   Aberta: { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
@@ -82,7 +40,7 @@ const statusStyles: Record<string, { color: string; bg: string }> = {
   Concluída: { color: "#86efac", bg: "rgba(134, 239, 172, 0.15)" },
 };
 
-// ─── Subcomponentes ────────────────────────────────────────────────────────────
+// ─── Subcomponentes ───────────────────────────────────────────────────────────
 
 function CardResumo({
   label,
@@ -129,7 +87,7 @@ function ItemManifestacao({
   item,
   onClick,
 }: {
-  item: Manifestacao;
+  item: TicketListaResponse;
   onClick: (id: string) => void;
 }) {
   return (
@@ -177,14 +135,7 @@ function ItemManifestacao({
       </Box>
 
       {/* Lado direito */}
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{
-          alignItems: "center",
-          flexShrink: 0,
-        }}
-      >
+      <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexShrink: 0 }}>
         <Box
           sx={{
             bgcolor: statusStyles[item.status]?.bg || "#333",
@@ -226,23 +177,22 @@ function EstadoVazio() {
   );
 }
 
-// ─── Componente principal ──────────────────────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function UserPage() {
   const navigate = useNavigate();
-  const [resumo, setResumo] = useState<Resumo | null>(null);
-  const [manifestacoes, setManifestacoes] = useState<Manifestacao[]>([]);
-  const [loadingResumo, setLoadingResumo] = useState(true);
-  const [loadingLista, setLoadingLista] = useState(true);
+  const [manifestacoes, setManifestacoes] = useState<TicketListaResponse[]>([]);
+  const [resumo, setResumo] = useState<Resumo>({ total: 0, emAndamento: 0, concluidas: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchResumo()
-      .then(setResumo)
-      .finally(() => setLoadingResumo(false));
-
-    fetchManifestacoes()
-      .then(setManifestacoes)
-      .finally(() => setLoadingLista(false));
+    ticketService
+      .listar()
+      .then((lista) => {
+        setManifestacoes(lista);
+        setResumo(calcularResumo(lista));
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   function handleNovaManifestacao() {
@@ -250,7 +200,7 @@ export default function UserPage() {
   }
 
   function handleVerDetalhe(id: string) {
-    navigate(`/ticketDetail/${id}`);
+    navigate(`/ticketDetail/${id}`, { state: manifestacoes.find((m) => m.id === id) ?? null });
   }
 
   return (
@@ -275,10 +225,7 @@ export default function UserPage() {
           }}
         >
           <Box>
-            <Typography
-              variant="h5"
-              sx={{ color: "white", fontWeight: 700, mb: 0.5 }}
-            >
+            <Typography variant="h5" sx={{ color: "white", fontWeight: 700, mb: 0.5 }}>
               Minhas Manifestações
             </Typography>
             <Typography variant="body2" sx={{ color: "#9ca3af" }}>
@@ -299,10 +246,7 @@ export default function UserPage() {
               whiteSpace: "nowrap",
               flexShrink: 0,
               bgcolor: "#16171d",
-              "&:hover": {
-                bgcolor: "#1f2028",
-                borderColor: "#3a3d4a",
-              },
+              "&:hover": { bgcolor: "#1f2028", borderColor: "#3a3d4a" },
             }}
           >
             Nova Manifestação
@@ -315,25 +259,13 @@ export default function UserPage() {
           spacing={2}
           sx={{ mb: { xs: 4, sm: 5 } }}
         >
-          <CardResumo
-            label="Total"
-            value={resumo?.total ?? 0}
-            loading={loadingResumo}
-          />
-          <CardResumo
-            label="Em andamento"
-            value={resumo?.emAndamento ?? 0}
-            loading={loadingResumo}
-          />
-          <CardResumo
-            label="Concluídas"
-            value={resumo?.concluidas ?? 0}
-            loading={loadingResumo}
-          />
+          <CardResumo label="Total" value={resumo.total} loading={loading} />
+          <CardResumo label="Em andamento" value={resumo.emAndamento} loading={loading} />
+          <CardResumo label="Concluídas" value={resumo.concluidas} loading={loading} />
         </Stack>
 
         {/* Lista de manifestações */}
-        {loadingLista ? (
+        {loading ? (
           <Stack spacing={2}>
             {[1, 2, 3].map((i) => (
               <Skeleton
@@ -349,11 +281,7 @@ export default function UserPage() {
         ) : (
           <Stack spacing={2}>
             {manifestacoes.map((item) => (
-              <ItemManifestacao
-                key={item.id}
-                item={item}
-                onClick={handleVerDetalhe}
-              />
+              <ItemManifestacao key={item.id} item={item} onClick={handleVerDetalhe} />
             ))}
           </Stack>
         )}
