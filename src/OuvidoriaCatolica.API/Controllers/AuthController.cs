@@ -34,7 +34,7 @@ namespace OuvidoriaCatolica.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "Ocorreu um erro interno ao tentar realizar o login." });
             }
@@ -45,8 +45,8 @@ namespace OuvidoriaCatolica.Controllers
         {
             try
             {
-                var currentUserId = User.GetUserId();
-                _service.CreatePassword(request.Email, request.Password, currentUserId);
+                _service.CreatePassword(request.Email, request.Password, Guid.Empty); 
+                
                 return Ok(new { message = "Senha cadastrada com sucesso. Você já pode realizar o login." });
             }
             catch (ArgumentException ex)
@@ -59,7 +59,12 @@ namespace OuvidoriaCatolica.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Ocorreu um erro interno ao tentar cadastrar a senha." });
+                return StatusCode(500, new 
+                { 
+                    message = "Ocorreu um erro interno ao tentar cadastrar a senha.",
+                    erroReal = ex.Message,
+                    erroProfundo = ex.InnerException?.Message
+                });
             }
         }
 
