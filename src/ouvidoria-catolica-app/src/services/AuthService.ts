@@ -8,6 +8,11 @@ export interface LoginDTO {
 
 export interface LoginResponse {
   token: string;
+  user: {
+    name: string;
+    email: string;
+    role: number;
+  }
 }
 
 export class AuthService {
