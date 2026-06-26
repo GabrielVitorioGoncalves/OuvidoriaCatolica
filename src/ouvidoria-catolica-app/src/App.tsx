@@ -1,29 +1,57 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./login"; 
-import User from "./pages/User/userPage";
-import AttendantPage from "./pages/Attendant/attendantPage";
-import TicketAdd from "./pages/User/ticketAdd";
-import TicketDetail from "./pages/User/ticketDetail";
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './login';
+import User from './pages/User/userPage';
+import AttendantPage from './pages/Attendant/attendantPage';
+import TicketAdd from './pages/User/ticketAdd';
+import TicketDetail from './pages/User/ticketDetail';
+import PrivateRoute from './PrivateRoute';
 
-// --- CONFIGURAÇÃO DAS ROTAS ---
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota Inicial / Padrão */}
+        {/* Pública — qualquer um acessa */}
         <Route path="/" element={<Login />} />
-        
-        {/* O catch-all * precisa ficar aqui se você quiser que ele redirecione erros */}
+
+        {/* Exclusiva do usuário comum */}
+        <Route
+          path="/user"
+          element={
+            <PrivateRoute roles={['Common']}>
+              <User />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ticketAdd"
+          element={
+            <PrivateRoute roles={['Common']}>
+              <TicketAdd />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ticketDetail/:id"
+          element={
+            <PrivateRoute roles={['Common']}>
+              <TicketDetail />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Exclusiva do atendente e admin */}
+        <Route
+          path="/attendant"
+          element={
+            <PrivateRoute roles={['Attendant', 'Admin']}>
+              <AttendantPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Qualquer rota desconhecida volta para o login */}
         <Route path="*" element={<Navigate to="/" replace />} />
-        
-        <Route path="/user" element={<User />} />
-        
-        {/* Rota removida: path="/ticket" estava causando o redirecionamento indevido */}
-        
-        <Route path="/attendant" element={<AttendantPage />} />
-        
-        <Route path="/ticketAdd" element={<TicketAdd />} />
-        <Route path="/ticketDetail/:id" element={<TicketDetail />} />
       </Routes>
     </BrowserRouter>
   );
