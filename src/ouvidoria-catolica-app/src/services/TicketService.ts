@@ -69,14 +69,14 @@ export class TicketService {
   }
 
   async criar(dados: CriarTicketDTO): Promise<TicketCriadoResponse> {
-    return this.http.post<TicketCriadoResponse>('/api/tickets', dados);
+    return this.http.post<TicketCriadoResponse>('/tickets', dados);
   }
 
   async listar(): Promise<TicketListaResponse[]> {
-    return this.http.get<TicketListaResponse[]>('/api/tickets/my-tickets');
+    return this.http.get<TicketListaResponse[]>('/tickets/my-tickets');
   }
 
   async buscarRespostas(id: string): Promise<TicketRespostaResponse[]> {
-    return this.http.get<TicketRespostaResponse[]>(`/api/tickets/${id}/responses`);
+    return this.http.get<TicketRespostaResponse[]>(`/tickets/${id}/responses`);
   }
 }
