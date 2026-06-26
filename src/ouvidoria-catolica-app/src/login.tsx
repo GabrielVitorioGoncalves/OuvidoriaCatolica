@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // IMPORTAÇÃO ADICIONADA
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -21,7 +21,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
-  // INICIALIZA O NAVEGADOR
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,22 +37,15 @@ export default function Login() {
       } else {
         const resposta = await authService.login({ email: email, password: senha });
         
-        // 1. Salva o token mantendo o seu padrão de nomenclatura
         localStorage.setItem('@Ouvidoria:token', resposta.token);
-        
-        // 2. Salva a role para as outras telas saberem quem está logado
         localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
 
-        // 3. Redirecionamento por perfil
         if (resposta.user.role === 3) {
-          // Rota do Administrador
-          navigate('/usuarios'); // Coloquei a rota que você comentou que já está pronta!
+          navigate('/user'); 
         } else if (resposta.user.role === 2) {
-          // Rota do Atendente
-          navigate('/atendente/chamados'); 
+          navigate('/attendant'); 
         } else {
-          // Rota do Usuário Comum
-          navigate('/meus-chamados'); 
+          navigate('/user'); 
         }
       }
     } catch (error) {
