@@ -16,7 +16,7 @@ public class TicketsController : ControllerBase
         _service = new TicketService(context);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, 3")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -31,7 +31,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Common")]
+    [Authorize(Roles = "Common, 1")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)
     {
@@ -51,7 +51,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Attendant, Admin")]
+    [Authorize(Roles = "Attendant, Admin, 2, 3")]
     [HttpPost("{id}/responses")]
     public async Task<IActionResult> AddResponse(Guid id, [FromBody] CreateTicketResponseRequest request)
     {
@@ -83,7 +83,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Attendant, Admin")]
+    [Authorize(Roles = "Attendant, Admin, 2, 3")]
     [HttpPut("{id}/request-info")]
     public async Task<IActionResult> RequestMoreInfo(Guid id)
     {
@@ -111,7 +111,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Attendant, Admin")]
+    [Authorize(Roles = "Attendant, Admin, 2, 3")]
     [HttpPut("{id}/close")]
     public async Task<IActionResult> CloseTicket(Guid id)
     {
@@ -135,7 +135,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Attendant, Admin")]
+    [Authorize(Roles = "Attendant, Admin, 2, 3")]
     [HttpGet("{id}/history")]
     public async Task<IActionResult> GetHistory(Guid id)
     {
@@ -151,7 +151,7 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Common")]
+    [Authorize(Roles = "Common, 1")]
     [HttpGet("my-tickets")] 
     public async Task<IActionResult> GetMyTickets()
     {
@@ -191,7 +191,8 @@ public class TicketsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Attendant")]
+    // AQUI ESTAVA O VILÃO PRINCIPAL! Agora aceita o número 2 também.
+    [Authorize(Roles = "Attendant, 2")]
     [HttpGet("sector/{sector}")]
     public async Task<IActionResult> GetBySector(Sector sector)
     {
