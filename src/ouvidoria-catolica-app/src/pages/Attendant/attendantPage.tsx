@@ -22,11 +22,8 @@ import {
 import { httpClient } from "../../infra/AxiosAdapter";
 import { getUserSession } from "../../infra/UserSession";
 
-// ─── Instância do service ─────────────────────────────────────────────────────
 
 const ticketService = new TicketService(httpClient);
-
-// ─── Mapeamentos visuais ──────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<number, string> = {
   1: "Aberta",
@@ -51,7 +48,7 @@ const SECTOR_LABEL: Record<number, string> = {
   6: "Educação",
 };
 
-// ─── Subcomponentes ───────────────────────────────────────────────────────────
+
 
 function CardResumo({ label, value, loading }: { label: string; value: number; loading: boolean }) {
   return (
@@ -366,7 +363,8 @@ export default function AttendantPage() {
   async function carregarTickets() {
     setLoading(true);
     try {
-      const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
+      // APAGUE O LISTAR POR SETOR E USE ESTE:
+      const data = await ticketService.listarTodos();
       setTickets(data);
     } catch {
       showMessage("Erro ao carregar manifestações.", "error");
@@ -380,7 +378,8 @@ export default function AttendantPage() {
     async function carregar() {
       setLoading(true);
       try {
-        const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
+        // APAGUE O LISTAR POR SETOR E USE ESTE AQUI TAMBÉM:
+        const data = await ticketService.listarTodos();
         if (ativo) setTickets(data);
       } catch {
         if (ativo) showMessage("Erro ao carregar manifestações.", "error");
