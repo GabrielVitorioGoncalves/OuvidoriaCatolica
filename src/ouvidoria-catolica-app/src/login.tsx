@@ -37,11 +37,7 @@ export default function Login() {
         setSenha("");
       } else {
         const resposta = await authService.login({ email: email, password: senha });
-        
-        console.log('role retornado pelo backend:', resposta.user.role);
-        console.log('tipo:', typeof resposta.user.role);
-
-
+    
         localStorage.setItem('@Ouvidoria:token', resposta.token);
         localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
         saveUserSession({
