@@ -39,6 +39,7 @@ export default function Login() {
         const resposta = await authService.login({ email: email, password: senha });
         
         localStorage.setItem('@Ouvidoria:token', resposta.token);
+        localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
         saveUserSession({
           name: resposta.user.name,
           role: resposta.user.role,
