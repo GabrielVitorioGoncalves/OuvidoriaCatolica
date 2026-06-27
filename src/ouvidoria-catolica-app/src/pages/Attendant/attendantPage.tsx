@@ -142,6 +142,11 @@ function DetalheView({
   const [enviando, setEnviando] = useState(false);
   const [fechando, setFechando] = useState(false);
   const [solicitando, setSolicitando] = useState(false);
+  const [assumindo, setAssumindo] = useState(false);
+
+  // Verifica se o atendente logado é o responsável pelo ticket
+  const isResponsavel = !!item.attendantId && item.isMyTicket;
+  const semResponsavel = !item.attendantId;
 
   useEffect(() => {
     Promise.all([
@@ -155,6 +160,19 @@ function DetalheView({
       .catch(() => onShowMessage("Erro ao carregar detalhes.", "error"))
       .finally(() => setLoadingDetalhes(false));
   }, [item.ticketID]);
+
+  async function handleAssumir() {
+    setAssumindo(true);
+    try {
+      await ticketService.assumir(item.ticketID);
+      onShowMessage("Ticket assumido com sucesso.");
+      onRefresh();
+    } catch {
+      onShowMessage("Erro ao assumir ticket.", "error");
+    } finally {
+      setAssumindo(false);
+    }
+  }
 
   async function handleResponder() {
     if (!resposta.trim()) return;
@@ -278,40 +296,61 @@ function DetalheView({
         <Stack spacing={3}>
           <Box sx={{ bgcolor: "#16171d", borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
             <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 3 }}>Ações</Typography>
-            {item.attendantName && (
-              <Box sx={{ border: "1px solid #2e303a", bgcolor: "#1f2028", borderRadius: 2, p: 2, mb: 3 }}>
-                <Typography variant="caption" sx={{ color: "#9ca3af", display: "block" }}>Responsável</Typography>
-                <Typography variant="body2" sx={{ color: "white", fontWeight: 500 }}>{item.attendantName}</Typography>
-              </Box>
-            )}
+
+            {/* Responsável */}
+            <Box sx={{ border: "1px solid #2e303a", bgcolor: "#1f2028", borderRadius: 2, p: 2, mb: 3 }}>
+              <Typography variant="caption" sx={{ color: "#9ca3af", display: "block" }}>Responsável</Typography>
+              <Typography variant="body2" sx={{ color: item.attendantName ? "white" : "#6b7280", fontWeight: 500 }}>
+                {item.attendantName ?? "Sem responsável"}
+              </Typography>
+            </Box>
+
             <Stack spacing={2}>
+              {/* Botão assumir — só aparece se não tiver responsável */}
+              {semResponsavel && (
+                <Button
+                  fullWidth
+                  onClick={handleAssumir}
+                  disabled={assumindo}
+                  sx={{ bgcolor: "#3b82f6", color: "white", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#2563eb" }, "&.Mui-disabled": { bgcolor: "#2a2a2a", color: "#6b7280" } }}
+                >
+                  {assumindo ? "Assumindo..." : "Assumir ticket"}
+                </Button>
+              )}
+
               <Button
                 fullWidth
                 onClick={handleSolicitarInfo}
-                disabled={isClosed || solicitando}
+                disabled={!isResponsavel || isClosed || solicitando}
                 variant="outlined"
                 sx={{ color: "white", borderColor: "#2e303a", textTransform: "none", "&:hover": { borderColor: "#9ca3af", bgcolor: "rgba(255,255,255,0.05)" }, "&.Mui-disabled": { borderColor: "#2e303a", color: "#6b7280" } }}
               >
                 {solicitando ? "Solicitando..." : "Solicitar mais informações"}
               </Button>
+
               <Button
                 fullWidth
                 onClick={handleFechar}
-                disabled={isClosed || fechando}
-                sx={{ bgcolor: isClosed ? "#2a2a2a" : "white", color: isClosed ? "#6b7280" : "black", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#f3f4f6" }, "&.Mui-disabled": { bgcolor: "#2a2a2a", color: "#6b7280" } }}
+                disabled={!isResponsavel || isClosed || fechando}
+                sx={{ bgcolor: !isResponsavel || isClosed ? "#2a2a2a" : "white", color: !isResponsavel || isClosed ? "#6b7280" : "black", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#f3f4f6" }, "&.Mui-disabled": { bgcolor: "#2a2a2a", color: "#6b7280" } }}
               >
                 {fechando ? "Encerrando..." : isClosed ? "Ticket encerrado" : "Encerrar ticket"}
               </Button>
             </Stack>
           </Box>
 
-          {/* Responder */}
+          {/* Responder — só habilitado para o responsável */}
           <Box sx={{ bgcolor: "#16171d", borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
             <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 3 }}>Responder ao aluno</Typography>
+            {!isResponsavel && !isClosed && (
+              <Typography variant="caption" sx={{ color: "#6b7280", display: "block", mb: 2 }}>
+                Apenas o atendente responsável pode responder.
+              </Typography>
+            )}
             <TextField
               multiline rows={4}
-              disabled={isClosed}
-              placeholder={isClosed ? "Ticket encerrado" : "Escreva a resposta ao aluno"}
+              disabled={!isResponsavel || isClosed}
+              placeholder={isClosed ? "Ticket encerrado" : !isResponsavel ? "Assuma o ticket para responder" : "Escreva a resposta ao aluno"}
               value={resposta}
               onChange={(e) => setResposta(e.target.value)}
               sx={{
@@ -328,7 +367,7 @@ function DetalheView({
             <Button
               fullWidth
               onClick={handleResponder}
-              disabled={isClosed || !resposta.trim() || enviando}
+              disabled={!isResponsavel || isClosed || !resposta.trim() || enviando}
               sx={{ bgcolor: "white", color: "black", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#f3f4f6" }, "&.Mui-disabled": { bgcolor: "#2a2a2a", color: "#6b7280" } }}
             >
               {enviando ? "Enviando..." : "Enviar resposta"}
@@ -354,53 +393,56 @@ export default function AttendantPage() {
     setSnackbar({ open: true, msg, tipo });
   }
 
-async function carregarTickets() {
-  setLoading(true);
-  try {
-    const session = getUserSession();
-    if (!session?.sector) {
-      showMessage("Setor do atendente não encontrado.", "error");
-      return;
-    }
-    const data = await ticketService.listarPorSetor(session.sector as SectorType);
-    setTickets(data);
-  } catch {
-    showMessage("Erro ao carregar manifestações.", "error");
-  } finally {
-    setLoading(false);
-  }
-}
-
-useEffect(() => {
-  let ativo = true;
-  async function carregar() {
+  async function carregarTickets() {
     setLoading(true);
     try {
       const session = getUserSession();
       if (!session?.sector) {
-        if (ativo) showMessage("Setor do atendente não encontrado.", "error");
+        showMessage("Setor do atendente não encontrado.", "error");
         return;
       }
       const data = await ticketService.listarPorSetor(session.sector as SectorType);
-      if (ativo) setTickets(data);
+      setTickets(data);
     } catch {
-      if (ativo) showMessage("Erro ao carregar manifestações.", "error");
+      showMessage("Erro ao carregar manifestações.", "error");
     } finally {
-      if (ativo) setLoading(false);
+      setLoading(false);
     }
   }
-  carregar();
-  return () => { ativo = false; };
-}, []);
+
+  useEffect(() => {
+    let ativo = true;
+    async function carregar() {
+      setLoading(true);
+      try {
+        const session = getUserSession();
+        if (!session?.sector) {
+          if (ativo) showMessage("Setor do atendente não encontrado.", "error");
+          return;
+        }
+        const data = await ticketService.listarPorSetor(session.sector as SectorType);
+        if (ativo) setTickets(data);
+      } catch {
+        if (ativo) showMessage("Erro ao carregar manifestações.", "error");
+      } finally {
+        if (ativo) setLoading(false);
+      }
+    }
+    carregar();
+    return () => { ativo = false; };
+  }, []);
 
   const filtrados = tickets.filter((t) => {
-    const matchTab = tab === "todas" || (tab === "meus" && t.isMyTicket);
+    // Aba "todas" — apenas sem responsável
+    const matchTab = tab === "todas"
+      ? !t.attendantId
+      : t.isMyTicket;
     const matchStatus = filtroStatus === "todos" || t.status === filtroStatus;
     return matchTab && matchStatus;
   });
 
   const totalRecebidos = tickets.length;
-  const semAtendente = tickets.filter((t) => !t.attendantName).length;
+  const semAtendente = tickets.filter((t) => !t.attendantId).length;
   const meusAtivos = tickets.filter((t) => t.isMyTicket && t.status !== TicketStatus.Closed).length;
   const selectedItem = tickets.find((t) => t.ticketID === selectedId);
 

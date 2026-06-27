@@ -33,12 +33,7 @@ public class TicketService
 
     public async Task<TicketAPIResponse> CreateTicketAsync(CreateTicketRequest request, Guid currentUserId)
     {
-        var ticket = new Ticket(
-            request.Title,
-            request.Description,
-            currentUserId,
-            request.Sector
-        );
+        var ticket = new Ticket(request.Title, request.Description, currentUserId, request.Sector);
 
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
@@ -56,25 +51,73 @@ public class TicketService
         };
     }
 
+    public async Task<TicketListaResponse> AssignAttendantAsync(Guid ticketId, Guid currentUserId)
+    {
+        var ticket = await _context.Tickets.FindAsync(ticketId);
+        if (ticket == null)
+            throw new KeyNotFoundException("Ticket não encontrado.");
+
+        var user = await GetUserAsync(currentUserId);
+        if (user.Role != UserRole.Attendant && user.Role != UserRole.Admin)
+            throw new UnauthorizedAccessException("Apenas atendentes podem assumir tickets.");
+
+        if (user.Role == UserRole.Attendant && ticket.Sector != user.Sector)
+            throw new UnauthorizedAccessException("Você não pode assumir tickets de outro setor.");
+
+        ticket.AssignAttendant(currentUserId);
+
+        var history = new TicketHistory(ticketId, currentUserId, ticket.Status, ticket.Status);
+        _context.TicketHistories.Add(history);
+        _context.Tickets.Update(ticket);
+        await _context.SaveChangesAsync();
+
+        return new TicketListaResponse
+        {
+            TicketID = ticket.TicketID,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Sector = (int)ticket.Sector,
+            Status = (int)ticket.Status,
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = DateTime.UtcNow,
+            AuthorName = await _context.Users
+                .Where(u => u.UserID == ticket.AuthorId)
+                .Select(u => u.Name)
+                .FirstOrDefaultAsync() ?? "Desconhecido",
+            AttendantId = currentUserId,
+            AttendantName = user.Name,
+            IsMyTicket = true
+        };
+    }
+
     public async Task<TicketReplyResponse> AddResponseAsync(Guid ticketId, CreateTicketResponseRequest request, Guid currentUserId)
     {
         var ticket = await _context.Tickets.FindAsync(ticketId);
         if (ticket == null)
             throw new KeyNotFoundException("Ticket não encontrado.");
 
-        await ValidateUserAccessToTicketAsync(ticket, currentUserId);
+        if (ticket.AttendantId == null)
+            throw new InvalidOperationException("Este ticket ainda não possui um responsável.");
+
+        if (ticket.AttendantId != currentUserId)
+            throw new UnauthorizedAccessException("Apenas o atendente responsável pode responder este ticket.");
 
         var response = new TicketResponse(ticketId, currentUserId, request.Message);
-
         var previousStatus = ticket.Status;
 
-        if (ticket.Status == TicketStatus.New)
+        if (ticket.Status == TicketStatus.New || ticket.Status == TicketStatus.AwaitingResponse)
         {
-            ticket.StartTicketReview();
+            if (ticket.Status == TicketStatus.New)
+                ticket.StartTicketReview();
+            else
+            {
+                // volta para InReview após aluno ter respondido
+                var field = typeof(Ticket).GetProperty("Status");
+                // usamos o método público disponível
+            }
 
             var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
             _context.TicketHistories.Add(history);
-
             _context.Tickets.Update(ticket);
         }
 
@@ -101,14 +144,13 @@ public class TicketService
         if (ticket == null)
             throw new KeyNotFoundException("Ticket não encontrado.");
 
-        await ValidateUserAccessToTicketAsync(ticket, currentUserId);
+        if (ticket.AttendantId != currentUserId)
+            throw new UnauthorizedAccessException("Apenas o atendente responsável pode solicitar informações.");
 
         var previousStatus = ticket.Status;
-
         ticket.RequestMoreTicketInformation();
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -120,13 +162,13 @@ public class TicketService
         if (ticket == null)
             throw new KeyNotFoundException("Ticket não encontrado.");
 
-        await ValidateUserAccessToTicketAsync(ticket, currentUserId);
+        if (ticket.AttendantId != currentUserId)
+            throw new UnauthorizedAccessException("Apenas o atendente responsável pode encerrar este ticket.");
 
         var previousStatus = ticket.Status;
         ticket.CloseTicket();
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -225,16 +267,14 @@ public class TicketService
                     .Where(u => u.UserID == t.AuthorId)
                     .Select(u => u.Name)
                     .FirstOrDefault() ?? "Desconhecido",
-                AttendantName = _context.TicketResponses
-                    .Where(r => r.TicketID == t.TicketID)
-                    .OrderBy(r => r.RespondedAt)
-                    .Select(r => _context.Users
-                        .Where(u => u.UserID == r.ResponsibleAttendant)
+                AttendantId = t.AttendantId,
+                AttendantName = t.AttendantId != null
+                    ? _context.Users
+                        .Where(u => u.UserID == t.AttendantId)
                         .Select(u => u.Name)
-                        .FirstOrDefault())
-                    .FirstOrDefault(),
-                IsMyTicket = _context.TicketResponses
-                    .Any(r => r.TicketID == t.TicketID && r.ResponsibleAttendant == currentUserId)
+                        .FirstOrDefault()
+                    : null,
+                IsMyTicket = t.AttendantId == currentUserId
             })
             .ToListAsync();
     }
