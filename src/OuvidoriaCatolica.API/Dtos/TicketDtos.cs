@@ -24,6 +24,7 @@ public class TicketDtos
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string AuthorName { get; set; } = string.Empty;
+        public Guid? AttendantId { get; set; }
         public string? AttendantName { get; set; }
         public bool IsMyTicket { get; set; }
     }

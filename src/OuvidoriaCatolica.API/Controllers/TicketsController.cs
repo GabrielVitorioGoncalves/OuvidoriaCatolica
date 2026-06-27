@@ -23,7 +23,7 @@ public class TicketsController : ControllerBase
         try
         {
             var tickets = await _service.GetAllTicketsAsync();
-            return Ok(tickets); 
+            return Ok(tickets);
         }
         catch (Exception)
         {
@@ -39,15 +39,43 @@ public class TicketsController : ControllerBase
         {
             var currentUserId = User.GetUserId();
             var createdTicket = await _service.CreateTicketAsync(request, currentUserId);
-            return StatusCode(201, createdTicket); 
+            return StatusCode(201, createdTicket);
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message }); 
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ocorreu um erro interno ao criar o ticket." });
+        }
+    }
+
+    [Authorize(Roles = "Attendant, Admin")]
+    [HttpPut("{id}/assign")]
+    public async Task<IActionResult> AssignAttendant(Guid id)
+    {
+        try
+        {
+            var currentUserId = User.GetUserId();
+            var ticket = await _service.AssignAttendantAsync(id, currentUserId);
+            return Ok(ticket);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao assumir o ticket." });
         }
     }
 
@@ -73,7 +101,7 @@ public class TicketsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -101,7 +129,7 @@ public class TicketsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -125,7 +153,7 @@ public class TicketsController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -152,14 +180,14 @@ public class TicketsController : ControllerBase
     }
 
     [Authorize(Roles = "Common")]
-    [HttpGet("my-tickets")] 
+    [HttpGet("my-tickets")]
     public async Task<IActionResult> GetMyTickets()
     {
         try
         {
             var currentUserId = User.GetUserId();
             var tickets = await _service.GetTicketsByUserIdAsync(currentUserId);
-            return Ok(tickets); 
+            return Ok(tickets);
         }
         catch (Exception)
         {
@@ -181,7 +209,7 @@ public class TicketsController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -205,7 +233,7 @@ public class TicketsController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
