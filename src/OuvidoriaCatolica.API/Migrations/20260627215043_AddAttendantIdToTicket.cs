@@ -1,29 +1,20 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace OuvidoriaCatolica.API.Migrations
 {
-    /// <inheritdoc />
     public partial class AddAttendantIdToTicket : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(
-                name: "AttendantId",
-                table: "Tickets",
-                type: "uuid",
-                nullable: true);
+            // A coluna já existe no banco.
+            // Não há nada para executar aqui.
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AttendantId",
-                table: "Tickets");
+            // Não remover a coluna, pois ela foi criada manualmente.
         }
     }
 }
