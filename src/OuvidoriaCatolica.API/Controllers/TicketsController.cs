@@ -16,14 +16,18 @@ public class TicketsController : ControllerBase
         _service = new TicketService(context);
     }
 
-    // ALTERAÇÃO FEITA AQUI: Agora os atendentes (Attendant e 2) podem listar tudo
     [Authorize(Roles = "Admin, Attendant, 3, 2")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         try
         {
-            var tickets = await _service.GetAllTicketsAsync();
+            // 1. Captura quem é o usuário (Atendente/Admin) que está fazendo a requisição
+            var currentUserId = User.GetUserId();
+            
+            // 2. Passa o ID para o Service mapear corretamente o isMyTicket
+            var tickets = await _service.GetAllTicketsAsync(currentUserId);
+            
             return Ok(tickets); 
         }
         catch (Exception)

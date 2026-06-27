@@ -13,7 +13,8 @@ public class TicketService
         _context = context;
     }
     
-    public async Task<IEnumerable<TicketAPIResponse>> GetAllTicketsAsync()
+    // CORREÇÃO: Método agora recebe o currentUserId para bater com o Controller
+    public async Task<IEnumerable<TicketAPIResponse>> GetAllTicketsAsync(Guid currentUserId)
     {
         return await _context.Tickets
             .AsNoTracking()
@@ -27,6 +28,8 @@ public class TicketService
                 Status = t.Status.ToString(),
                 CreatedAt = t.CreatedAt,
                 ClosedAt = t.ClosedAt
+                // Obs: Os campos AuthorName, UpdatedAt e IsMyTicket não estão sendo 
+                // mapeados aqui (veja a explicação abaixo).
             })
             .ToListAsync();
     }
