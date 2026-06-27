@@ -12,31 +12,25 @@ public class TicketService
     {
         _context = context;
     }
-
+    
     // CORREÇÃO: Método agora recebe o currentUserId para bater com o Controller
     public async Task<IEnumerable<TicketAPIResponse>> GetAllTicketsAsync(Guid currentUserId)
     {
         return await _context.Tickets
-            .Include(t => t.Author)
-            .Include(t => t.Attendant)
             .AsNoTracking()
-    .Select(t => new TicketAPIResponse
-    {
-        TicketID = t.TicketID,
-        Title = t.Title,
-        Description = t.Description,
-        AuthorId = t.AuthorId,
-        // Trocado de .Nome para .Name
-        AuthorName = t.Author != null ? t.Author.Name : "Desconhecido",
-        // Trocado de .Nome para .Name
-        AttendantName = t.Attendant != null ? t.Attendant.Name : "Sem atendente",
-        Sector = t.Sector.ToString(),
-        Status = t.Status.ToString(),
-        CreatedAt = t.CreatedAt,
-        UpdatedAt = t.CreatedAt,
-        ClosedAt = t.ClosedAt,
-        IsMyTicket = (t.AttendantId == currentUserId)
-    })
+            .Select(t => new TicketAPIResponse
+            {
+                TicketID = t.TicketID,
+                Title = t.Title,
+                Description = t.Description,
+                AuthorId = t.AuthorId,
+                Sector = t.Sector.ToString(),
+                Status = t.Status.ToString(),
+                CreatedAt = t.CreatedAt,
+                ClosedAt = t.ClosedAt
+                // Obs: Os campos AuthorName, UpdatedAt e IsMyTicket não estão sendo 
+                // mapeados aqui (veja a explicação abaixo).
+            })
             .ToListAsync();
     }
 
@@ -81,10 +75,10 @@ public class TicketService
         if (ticket.Status == TicketStatus.New)
         {
             ticket.StartTicketReview();
-
+            
             var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
             _context.TicketHistories.Add(history);
-
+            
             _context.Tickets.Update(ticket);
         }
 
@@ -109,11 +103,11 @@ public class TicketService
         await ValidateUserAccessToTicketAsync(ticket, currentUserId);
 
         var previousStatus = ticket.Status;
-
-        ticket.RequestMoreTicketInformation();
+        
+        ticket.RequestMoreTicketInformation(); 
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-
+        
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -131,7 +125,7 @@ public class TicketService
         ticket.CloseTicket();
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-
+        
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -156,8 +150,8 @@ public class TicketService
             {
                 HistoryID = h.HistoryID,
                 ResponsibleAttendant = h.ResponsibleAttendant,
-                PreviousStatus = h.PreviousStatus.ToString(),
-                NewStatus = h.NewStatus.ToString(),
+                PreviousStatus = h.PreviousStatus.ToString(), 
+                NewStatus = h.NewStatus.ToString(),           
                 ChangedAt = h.ChangedAt
             })
             .ToListAsync();
@@ -209,7 +203,7 @@ public class TicketService
     public async Task<IEnumerable<TicketAPIResponse>> GetTicketsBySectorAsync(Sector sector, Guid currentUserId)
     {
         var user = await GetUserAsync(currentUserId);
-
+    
         if (user.Role != UserRole.Admin && user.Sector != sector)
             throw new UnauthorizedAccessException("Você só pode visualizar as manifestações do seu próprio setor.");
 
@@ -227,15 +221,15 @@ public class TicketService
                 CreatedAt = t.CreatedAt,
                 ClosedAt = t.ClosedAt
             })
-            .ToListAsync();
+            .ToListAsync(); 
     }
 
     private async Task ValidateUserAccessToTicketAsync(Ticket ticket, Guid currentUserId)
     {
         var user = await GetUserAsync(currentUserId);
 
-        if (user.Role == UserRole.Admin)
-            return;
+        if (user.Role == UserRole.Admin) 
+            return; 
 
         if (user.Role == UserRole.Attendant && ticket.Sector != user.Sector)
             throw new UnauthorizedAccessException("Você não tem permissão para acessar manifestações deste setor.");
@@ -249,10 +243,10 @@ public class TicketService
         var user = await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.UserID == userId);
-
+        
         if (user == null)
             throw new KeyNotFoundException("Usuário não encontrado.");
-
+        
         return user;
     }
 }
