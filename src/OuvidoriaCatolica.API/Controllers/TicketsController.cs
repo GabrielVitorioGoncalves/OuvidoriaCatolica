@@ -16,7 +16,8 @@ public class TicketsController : ControllerBase
         _service = new TicketService(context);
     }
 
-    [Authorize(Roles = "Admin, 3")]
+    // ALTERAÇÃO FEITA AQUI: Agora os atendentes (Attendant e 2) podem listar tudo
+    [Authorize(Roles = "Admin, Attendant, 3, 2")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -191,7 +192,6 @@ public class TicketsController : ControllerBase
         }
     }
 
-    // AQUI ESTAVA O VILÃO PRINCIPAL! Agora aceita o número 2 também.
     [Authorize(Roles = "Attendant, 2")]
     [HttpGet("sector/{sector}")]
     public async Task<IActionResult> GetBySector(Sector sector)

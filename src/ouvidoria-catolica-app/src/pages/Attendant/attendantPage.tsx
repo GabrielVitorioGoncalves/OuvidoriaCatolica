@@ -17,16 +17,10 @@ import {
   type TicketListaResponse,
   type TicketRespostaResponse,
   type TicketHistoricoResponse,
-  type SectorType,
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
-import { getUserSession } from "../../infra/UserSession";
-
-// ─── Instância do service ─────────────────────────────────────────────────────
 
 const ticketService = new TicketService(httpClient);
-
-// ─── Mapeamentos visuais ──────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<number, string> = {
   1: "Aberta",
@@ -50,8 +44,6 @@ const SECTOR_LABEL: Record<number, string> = {
   5: "Saúde",
   6: "Educação",
 };
-
-// ─── Subcomponentes ───────────────────────────────────────────────────────────
 
 function CardResumo({ label, value, loading }: { label: string; value: number; loading: boolean }) {
   return (
@@ -284,14 +276,12 @@ function DetalheView({
         <Stack spacing={3}>
           <Box sx={{ bgcolor: "#16171d", borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
             <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 3 }}>Ações</Typography>
-
             {item.attendantName && (
               <Box sx={{ border: "1px solid #2e303a", bgcolor: "#1f2028", borderRadius: 2, p: 2, mb: 3 }}>
                 <Typography variant="caption" sx={{ color: "#9ca3af", display: "block" }}>Responsável</Typography>
                 <Typography variant="body2" sx={{ color: "white", fontWeight: 500 }}>{item.attendantName}</Typography>
               </Box>
             )}
-
             <Stack spacing={2}>
               <Button
                 fullWidth
@@ -302,7 +292,6 @@ function DetalheView({
               >
                 {solicitando ? "Solicitando..." : "Solicitar mais informações"}
               </Button>
-
               <Button
                 fullWidth
                 onClick={handleFechar}
@@ -366,7 +355,7 @@ export default function AttendantPage() {
   async function carregarTickets() {
     setLoading(true);
     try {
-      const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
+      const data = await ticketService.listarTodos();
       setTickets(data);
     } catch {
       showMessage("Erro ao carregar manifestações.", "error");
@@ -380,7 +369,7 @@ export default function AttendantPage() {
     async function carregar() {
       setLoading(true);
       try {
-        const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
+        const data = await ticketService.listarTodos();
         if (ativo) setTickets(data);
       } catch {
         if (ativo) showMessage("Erro ao carregar manifestações.", "error");
@@ -401,7 +390,6 @@ export default function AttendantPage() {
   const totalRecebidos = tickets.length;
   const semAtendente = tickets.filter((t) => !t.attendantName).length;
   const meusAtivos = tickets.filter((t) => t.isMyTicket && t.status !== TicketStatus.Closed).length;
-
   const selectedItem = tickets.find((t) => t.ticketID === selectedId);
 
   const STATUS_FILTRO = [
@@ -430,7 +418,6 @@ export default function AttendantPage() {
                 <Typography variant="h5" sx={{ color: "white", fontWeight: 700, mb: 0.5 }}>Atendimento Acadêmico</Typography>
                 <Typography variant="body2" sx={{ color: "#9ca3af" }}>Gerencie as manifestações e requisições dos alunos.</Typography>
               </Box>
-
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: { xs: 4, sm: 5 } }}>
                 <CardResumo label="Chamados recebidos" value={totalRecebidos} loading={loading} />
                 <CardResumo label="Aguardando atendente" value={semAtendente} loading={loading} />
@@ -445,7 +432,6 @@ export default function AttendantPage() {
                     </Button>
                   ))}
                 </Box>
-
                 <Select
                   size="small"
                   value={filtroStatus}
@@ -480,7 +466,6 @@ export default function AttendantPage() {
           )}
         </Box>
       </Box>
-
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar((p) => ({ ...p, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert severity={snackbar.tipo} onClose={() => setSnackbar((p) => ({ ...p, open: false }))} variant="filled" sx={{ width: "100%" }}>
           {snackbar.msg}
