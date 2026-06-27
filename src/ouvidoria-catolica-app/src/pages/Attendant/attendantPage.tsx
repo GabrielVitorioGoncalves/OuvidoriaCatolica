@@ -17,8 +17,10 @@ import {
   type TicketListaResponse,
   type TicketRespostaResponse,
   type TicketHistoricoResponse,
+  type SectorType,
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
+import { getUserSession } from '../../infra/UserSession';
 
 const ticketService = new TicketService(httpClient);
 
@@ -352,34 +354,44 @@ export default function AttendantPage() {
     setSnackbar({ open: true, msg, tipo });
   }
 
-  async function carregarTickets() {
+async function carregarTickets() {
+  setLoading(true);
+  try {
+    const session = getUserSession();
+    if (!session?.sector) {
+      showMessage("Setor do atendente não encontrado.", "error");
+      return;
+    }
+    const data = await ticketService.listarPorSetor(session.sector as SectorType);
+    setTickets(data);
+  } catch {
+    showMessage("Erro ao carregar manifestações.", "error");
+  } finally {
+    setLoading(false);
+  }
+}
+
+useEffect(() => {
+  let ativo = true;
+  async function carregar() {
     setLoading(true);
     try {
-      const data = await ticketService.listarTodos();
-      setTickets(data);
+      const session = getUserSession();
+      if (!session?.sector) {
+        if (ativo) showMessage("Setor do atendente não encontrado.", "error");
+        return;
+      }
+      const data = await ticketService.listarPorSetor(session.sector as SectorType);
+      if (ativo) setTickets(data);
     } catch {
-      showMessage("Erro ao carregar manifestações.", "error");
+      if (ativo) showMessage("Erro ao carregar manifestações.", "error");
     } finally {
-      setLoading(false);
+      if (ativo) setLoading(false);
     }
   }
-
-  useEffect(() => {
-    let ativo = true;
-    async function carregar() {
-      setLoading(true);
-      try {
-        const data = await ticketService.listarTodos();
-        if (ativo) setTickets(data);
-      } catch {
-        if (ativo) showMessage("Erro ao carregar manifestações.", "error");
-      } finally {
-        if (ativo) setLoading(false);
-      }
-    }
-    carregar();
-    return () => { ativo = false; };
-  }, []);
+  carregar();
+  return () => { ativo = false; };
+}, []);
 
   const filtrados = tickets.filter((t) => {
     const matchTab = tab === "todas" || (tab === "meus" && t.isMyTicket);
