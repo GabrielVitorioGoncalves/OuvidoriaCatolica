@@ -1,9 +1,9 @@
 // src/components/PrivateRoute.tsx
 import { Navigate } from 'react-router-dom';
-import { isAuthenticated } from '../useAuth';
+import { isAuthenticated, getUserRole } from '../useAuth';
 
 type Role = 'Common' | 'Attendant' | 'Admin';
-
+/*
 // Mapeia o role numérico do localStorage para o role string do backend
 const ROLE_MAP: Record<string, Role> = {
   '1': 'Common',
@@ -16,7 +16,7 @@ function getUserRoleFromStorage(): Role | null {
   if (!raw) return null;
   return ROLE_MAP[raw] ?? null;
 }
-
+*/
 function getRedirectByRole(role: Role | null): string {
   if (role === 'Attendant' || role === 'Admin') return '/attendant';
   return '/user';
@@ -35,11 +35,7 @@ export default function PrivateRoute({ children, roles }: PrivateRouteProps) {
 
   // 2. Role insuficiente → redireciona para a página correta do seu role
   if (roles) {
-    const role = getUserRoleFromStorage();
-
-    console.log('role no localStorage:', localStorage.getItem('@Ouvidoria:role'));
-    console.log('role mapeado:', role);
-    console.log('roles permitidos:', roles);
+    const role = getUserRole();
 
     if (!role || !roles.includes(role)) {
       return <Navigate to={getRedirectByRole(role)} replace />;
