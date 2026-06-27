@@ -81,46 +81,46 @@ export class TicketService {
 
   // POST /api/tickets — cria manifestação (Role: Common)
   async criar(dados: CriarTicketDTO): Promise<TicketCriadoResponse> {
-    return this.http.post<TicketCriadoResponse>('/api/tickets', dados);
+    return this.http.post<TicketCriadoResponse>('/tickets', dados);
   }
 
   // GET /api/tickets/my-tickets — lista tickets do usuário logado (Role: Common)
   async listar(): Promise<TicketListaResponse[]> {
-    return this.http.get<TicketListaResponse[]>('/api/tickets/my-tickets');
+    return this.http.get<TicketListaResponse[]>('/tickets/my-tickets');
   }
 
   // GET /api/tickets — lista todos os tickets (Role: Admin)
   async listarTodos(): Promise<TicketListaResponse[]> {
-    return this.http.get<TicketListaResponse[]>('/api/tickets');
+    return this.http.get<TicketListaResponse[]>('/tickets');
   }
 
   // GET /api/tickets/sector/{sector} — lista tickets do setor (Role: Attendant)
   async listarPorSetor(sector: SectorType): Promise<TicketListaResponse[]> {
-    return this.http.get<TicketListaResponse[]>(`/api/tickets/sector/${sector}`);
+    return this.http.get<TicketListaResponse[]>(`/tickets/sector/${sector}`);
   }
 
   // GET /api/tickets/{id}/responses — respostas do ticket (Role: Authorize)
   async buscarRespostas(id: string): Promise<TicketRespostaResponse[]> {
-    return this.http.get<TicketRespostaResponse[]>(`/api/tickets/${id}/responses`);
+    return this.http.get<TicketRespostaResponse[]>(`/tickets/${id}/responses`);
   }
 
   // GET /api/tickets/{id}/history — histórico do ticket (Role: Attendant, Admin)
   async buscarHistorico(id: string): Promise<TicketHistoricoResponse[]> {
-    return this.http.get<TicketHistoricoResponse[]>(`/api/tickets/${id}/history`);
+    return this.http.get<TicketHistoricoResponse[]>(`/tickets/${id}/history`);
   }
 
   // POST /api/tickets/{id}/responses — responde ao ticket (Role: Attendant, Admin)
   async responder(id: string, dados: CriarRespostaDTO): Promise<TicketRespostaResponse> {
-    return this.http.post<TicketRespostaResponse>(`/api/tickets/${id}/responses`, dados);
+    return this.http.post<TicketRespostaResponse>(`/tickets/${id}/responses`, dados);
   }
 
   // PUT /api/tickets/{id}/close — fecha o ticket (Role: Attendant, Admin)
   async fechar(id: string): Promise<void> {
-    return this.http.put<void>(`/api/tickets/${id}/close`, {});
+    return this.http.put<void>(`/tickets/${id}/close`, {});
   }
 
   // PUT /api/tickets/{id}/request-info — solicita mais informações (Role: Attendant, Admin)
   async solicitarInformacoes(id: string): Promise<void> {
-    return this.http.put<void>(`/api/tickets/${id}/request-info`, {});
+    return this.http.put<void>(`/tickets/${id}/request-info`, {});
   }
 }
