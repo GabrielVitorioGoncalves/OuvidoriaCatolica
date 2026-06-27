@@ -5,6 +5,7 @@
 export interface UserSession {
   name: string;
   role: number; // 1=Usuário, 2=Atendente, 3=Administrador
+  sector?: number; // setor do atendente (quando role=2)
 }
 
 const ROLE_LABELS: Record<number, string> = {
