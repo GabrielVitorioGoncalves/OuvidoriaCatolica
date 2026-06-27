@@ -27,7 +27,7 @@ namespace OuvidoriaCatolica.Controllers
                 return Ok(new 
                 { 
                     Token = result.Token, 
-                    User = new { result.User.Name, result.User.Email, result.User.Role } 
+                    User = new { result.User.Name, result.User.Email, result.User.Role, result.User.Sector } 
                 });
             }
             catch (UnauthorizedAccessException ex)

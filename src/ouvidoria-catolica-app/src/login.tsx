@@ -11,6 +11,7 @@ import {
 
 import { AuthService } from "./services/AuthService";
 import { httpClient } from "./infra/AxiosAdapter";
+import { saveUserSession } from './infra/UserSession';
 
 const authService = new AuthService(httpClient);
 
@@ -38,7 +39,11 @@ export default function Login() {
         const resposta = await authService.login({ email: email, password: senha });
         
         localStorage.setItem('@Ouvidoria:token', resposta.token);
-        localStorage.setItem('@Ouvidoria:role', resposta.user.role.toString());
+        saveUserSession({
+          name: resposta.user.name,
+          role: resposta.user.role,
+          sector: resposta.user.sector,
+        });
 
         if (resposta.user.role === 3) {
           navigate('/admin'); 
