@@ -17,8 +17,10 @@ import {
   type TicketListaResponse,
   type TicketRespostaResponse,
   type TicketHistoricoResponse,
+  type SectorType,
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
+import { getUserSession } from "../../infra/UserSession";
 
 // ─── Instância do service ─────────────────────────────────────────────────────
 
@@ -364,7 +366,7 @@ export default function AttendantPage() {
   async function carregarTickets() {
     setLoading(true);
     try {
-      const data = await ticketService.listarTodos();
+      const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
       setTickets(data);
     } catch {
       showMessage("Erro ao carregar manifestações.", "error");
@@ -378,7 +380,7 @@ export default function AttendantPage() {
     async function carregar() {
       setLoading(true);
       try {
-        const data = await ticketService.listarTodos();
+        const data = await ticketService.listarPorSetor((getUserSession()?.sector ?? 1) as SectorType);
         if (ativo) setTickets(data);
       } catch {
         if (ativo) showMessage("Erro ao carregar manifestações.", "error");
