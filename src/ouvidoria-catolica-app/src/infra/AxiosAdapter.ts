@@ -37,12 +37,11 @@ export class AxiosAdapter implements HttpClient {
           window.location.href = '/';
         }
 
-        // 403 — usuário autenticado mas sem permissão: redireciona para a página correta
+        // 403 — usuário autenticado mas sem permissão
         if (status === 403) {
-          const role = localStorage.getItem('@Ouvidoria:role');
-          window.location.href = role === 'Admin' || role === 'Attendant'
-            ? '/attendant'
-            : '/user';
+          // O redirecionamento forçado foi REMOVIDO daqui para acabar com o loop infinito.
+          // O Axios agora apenas avisa no console e deixa o componente da tela exibir o erro no Snackbar.
+          console.warn("Acesso negado pela API (Erro 403). Verifique as permissões da rota no backend.");
         }
 
         // Repassa o erro para o catch do service tratar normalmente
