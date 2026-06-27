@@ -280,12 +280,248 @@ Essas entidades compõem a base estrutural da aplicação, permitindo o gerencia
 
 -----
 
-## 🎓 Projeto Acadêmico
- 
-Projeto desenvolvido para a disciplina de Segurança da Informação da Universidade Católica.
- 
-O objetivo é aplicar conceitos de desenvolvimento seguro, autenticação, controle de acesso, proteção de dados e boas práticas de engenharia de software na construção de uma plataforma de ouvidoria institucional.
- 
+# 🚀 Instruções de Execução
+
+Este documento descreve o processo para executar o **Sistema de Ouvidoria** em ambiente de desenvolvimento local.
+
+O projeto é composto por:
+
+- **Back-end:** .NET 10 (ASP.NET Core + Entity Framework Core)
+- **Front-end:** React.js + Vite
+- **Banco de Dados:** PostgreSQL (local ou Supabase)
+
+---
+
+# 1. Pré-requisitos
+
+Antes de iniciar, certifique-se de possuir os seguintes softwares instalados:
+
+- Git
+- Node.js **18** ou superior
+- npm (ou Yarn)
+- .NET SDK **10**
+- PostgreSQL local **ou** uma conta no Supabase
+
+---
+
+# 2. Clonando o Repositório
+
+Abra o terminal e execute:
+
+```bash
+git clone https://github.com/GabrielVitorioGoncalves/OuvidoriaCatolica.git
+cd OuvidoriaCatolica
+```
+
+---
+
+# 3. Configuração do Banco de Dados
+
+O projeto utiliza PostgreSQL.
+
+Você pode utilizar:
+
+- PostgreSQL instalado localmente;
+- Banco hospedado no Supabase.
+
+## Utilizando o Supabase
+
+1. Acesse o painel do Supabase.
+2. Entre em **Database**.
+3. Copie a **Connection String**.
+
+Ela deve possuir um formato semelhante a:
+
+```text
+Host=SEU_HOST;
+Port=5432;
+Database=postgres;
+Username=postgres;
+Password=SUA_SENHA;
+SSL Mode=Require;
+Trust Server Certificate=true;
+```
+
+---
+
+# 4. Configuração do Back-end (.NET 10)
+
+A API utiliza o Entity Framework Core para gerenciamento do banco de dados.
+
+## 4.1 Acesse a pasta da API
+
+```bash
+cd src/Backend
+```
+
+---
+
+## 4.2 Restaure as dependências
+
+```bash
+dotnet restore
+```
+
+---
+
+## 4.3 Configure a Connection String
+
+Edite o arquivo:
+
+```
+appsettings.Development.json
+```
+
+Altere o conteúdo para:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "SUA_CONNECTION_STRING"
+  }
+}
+```
+
+---
+
+## 4.4 Execute as migrações
+
+Esse comando criará automaticamente todas as tabelas no banco.
+
+```bash
+dotnet ef database update
+```
+
+---
+
+## 4.5 Execute a API
+
+```bash
+dotnet run
+```
+
+Ao iniciar, será exibido um endereço semelhante a:
+
+```
+http://localhost:5000
+```
+
+ou
+
+```
+https://localhost:7000
+```
+
+Anote a porta utilizada, pois ela será necessária no Front-end.
+
+---
+
+# 5. Configuração do Front-end (React + Vite)
+
+Abra um **novo terminal**.
+
+---
+
+## 5.1 Acesse a pasta do Front-end
+
+```bash
+cd src/Frontend
+```
+
+---
+
+## 5.2 Instale as dependências
+
+```bash
+npm install
+```
+
+---
+
+## 5.3 Configure o arquivo `.env`
+
+Crie um arquivo chamado:
+
+```
+.env
+```
+
+Na raiz do Front-end.
+
+Adicione:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+> **Importante:** Ajuste a porta conforme a utilizada pela API (`dotnet run`).
+
+---
+
+## 5.4 Execute o Front-end
+
+```bash
+npm run dev
+```
+
+O Vite iniciará o servidor de desenvolvimento e exibirá um endereço semelhante a:
+
+```
+http://localhost:5173
+```
+
+Abra esse endereço no navegador.
+
+---
+
+# Estrutura do Projeto
+
+```
+OuvidoriaCatolica
+│
+├── src
+│   ├── Backend
+│   │   ├── Controllers
+│   │   ├── Models
+│   │   ├── Services
+│   │   ├── Data
+│   │   └── Program.cs
+│   │
+│   └── Frontend
+│       ├── src
+│       ├── public
+│       ├── package.json
+│       └── vite.config.ts
+│
+└── README.md
+```
+
+---
+
+# Fluxo de Execução
+
+1. Clone o repositório.
+2. Configure a Connection String do PostgreSQL.
+3. Execute as migrações do Entity Framework.
+4. Inicie a API (`dotnet run`).
+5. Configure a variável `VITE_API_URL`.
+6. Execute o Front-end (`npm run dev`).
+7. Acesse a aplicação pelo navegador.
+
+---
+
+# Observações
+
+- O Back-end deve estar em execução antes de iniciar o Front-end.
+- Caso utilize outra porta para a API, atualize a variável `VITE_API_URL`.
+- Sempre que novas migrações forem adicionadas ao projeto, execute novamente:
+
+```bash
+dotnet ef database update
+```
+
+para manter o banco sincronizado com o modelo da aplicação.
+
 ---
  
 ## 👨‍💻 Equipe
