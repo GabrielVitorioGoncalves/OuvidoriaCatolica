@@ -5,7 +5,7 @@ import User from './pages/User/userPage';
 import AttendantPage from './pages/Attendant/attendantPage';
 import TicketAdd from './pages/User/ticketAdd';
 import TicketDetail from './pages/User/ticketDetail';
-import PrivateRoute from './PrivateRoute';
+import PrivateRoute from './infra/PrivateRoute';
 
 export default function App() {
   return (
