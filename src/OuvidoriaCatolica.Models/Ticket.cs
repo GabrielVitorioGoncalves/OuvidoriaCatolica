@@ -16,7 +16,7 @@ public class Ticket
     }
 
     // EF Core
-    private Ticket() {}
+    private Ticket() { }
 
     public Guid TicketID { get; private set; }
     public string Title { get; private set; }
@@ -27,6 +27,9 @@ public class Ticket
     public TicketStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? ClosedAt { get; private set; }
+    public User Author { get; private set; }
+    public User Attendant { get; private set; }
+    public Guid? AttendantId { get; private set; }
 
     // public void UpdateTicket(string title, string description)
     // {
