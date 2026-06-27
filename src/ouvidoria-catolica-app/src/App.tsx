@@ -14,7 +14,7 @@ export default function App() {
         {/* Pública — qualquer um acessa */}
         <Route path="/" element={<Login />} />
 
-        {/* Exclusiva do usuário comum */}
+        {/* Exclusiva do usuário comum (Perfil 1 ou 'Common') */}
         <Route
           path="/user"
           element={
@@ -40,7 +40,7 @@ export default function App() {
           }
         />
 
-        {/* Exclusiva do atendente e admin */}
+        {/* Exclusiva do atendente e admin (Perfis 2 e 3) */}
         <Route
           path="/attendant"
           element={
