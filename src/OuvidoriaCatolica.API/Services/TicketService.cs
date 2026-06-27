@@ -12,7 +12,7 @@ public class TicketService
     {
         _context = context;
     }
-    
+
     public async Task<IEnumerable<TicketAPIResponse>> GetAllTicketsAsync()
     {
         return await _context.Tickets
@@ -37,7 +37,6 @@ public class TicketService
             request.Title,
             request.Description,
             currentUserId,
-            // categoryId: request.CategoryId,
             request.Sector
         );
 
@@ -72,20 +71,25 @@ public class TicketService
         if (ticket.Status == TicketStatus.New)
         {
             ticket.StartTicketReview();
-            
+
             var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
             _context.TicketHistories.Add(history);
-            
+
             _context.Tickets.Update(ticket);
         }
 
         _context.TicketResponses.Add(response);
         await _context.SaveChangesAsync();
 
+        var attendantName = await _context.Users
+            .Where(u => u.UserID == currentUserId)
+            .Select(u => u.Name)
+            .FirstOrDefaultAsync() ?? "Desconhecido";
+
         return new TicketReplyResponse
         {
             ResponseID = response.ResponseID,
-            ResponsibleAttendant = response.ResponsibleAttendant,
+            ResponsibleAttendant = attendantName,
             Message = response.Message,
             RespondedAt = response.RespondedAt
         };
@@ -100,11 +104,11 @@ public class TicketService
         await ValidateUserAccessToTicketAsync(ticket, currentUserId);
 
         var previousStatus = ticket.Status;
-        
-        ticket.RequestMoreTicketInformation(); 
+
+        ticket.RequestMoreTicketInformation();
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-        
+
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -122,7 +126,7 @@ public class TicketService
         ticket.CloseTicket();
 
         var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
-        
+
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -145,11 +149,9 @@ public class TicketService
             .AsNoTracking()
             .Select(h => new TicketHistoryResponse
             {
-                HistoryID = h.HistoryID,
-                ResponsibleAttendant = h.ResponsibleAttendant,
-                PreviousStatus = h.PreviousStatus.ToString(), 
-                NewStatus = h.NewStatus.ToString(),           
-                ChangedAt = h.ChangedAt
+                Id = h.HistoryID,
+                Descricao = "Status alterado de " + h.PreviousStatus.ToString() + " para " + h.NewStatus.ToString(),
+                Data = h.ChangedAt
             })
             .ToListAsync();
     }
@@ -190,43 +192,59 @@ public class TicketService
             .Select(r => new TicketReplyResponse
             {
                 ResponseID = r.ResponseID,
-                ResponsibleAttendant = r.ResponsibleAttendant,
+                ResponsibleAttendant = _context.Users
+                    .Where(u => u.UserID == r.ResponsibleAttendant)
+                    .Select(u => u.Name)
+                    .FirstOrDefault() ?? "Desconhecido",
                 Message = r.Message,
                 RespondedAt = r.RespondedAt
             })
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<TicketAPIResponse>> GetTicketsBySectorAsync(Sector sector, Guid currentUserId)
+    public async Task<IEnumerable<TicketListaResponse>> GetTicketsBySectorAsync(Sector sector, Guid currentUserId)
     {
         var user = await GetUserAsync(currentUserId);
-    
+
         if (user.Role != UserRole.Admin && user.Sector != sector)
             throw new UnauthorizedAccessException("Você só pode visualizar as manifestações do seu próprio setor.");
 
         return await _context.Tickets
             .Where(t => t.Sector == sector)
             .AsNoTracking()
-            .Select(t => new TicketAPIResponse
+            .Select(t => new TicketListaResponse
             {
                 TicketID = t.TicketID,
                 Title = t.Title,
                 Description = t.Description,
-                AuthorId = t.AuthorId,
-                Sector = t.Sector.ToString(),
-                Status = t.Status.ToString(),
+                Sector = (int)t.Sector,
+                Status = (int)t.Status,
                 CreatedAt = t.CreatedAt,
-                ClosedAt = t.ClosedAt
+                UpdatedAt = t.ClosedAt ?? t.CreatedAt,
+                AuthorName = _context.Users
+                    .Where(u => u.UserID == t.AuthorId)
+                    .Select(u => u.Name)
+                    .FirstOrDefault() ?? "Desconhecido",
+                AttendantName = _context.TicketResponses
+                    .Where(r => r.TicketID == t.TicketID)
+                    .OrderBy(r => r.RespondedAt)
+                    .Select(r => _context.Users
+                        .Where(u => u.UserID == r.ResponsibleAttendant)
+                        .Select(u => u.Name)
+                        .FirstOrDefault())
+                    .FirstOrDefault(),
+                IsMyTicket = _context.TicketResponses
+                    .Any(r => r.TicketID == t.TicketID && r.ResponsibleAttendant == currentUserId)
             })
-            .ToListAsync(); 
+            .ToListAsync();
     }
 
     private async Task ValidateUserAccessToTicketAsync(Ticket ticket, Guid currentUserId)
     {
         var user = await GetUserAsync(currentUserId);
 
-        if (user.Role == UserRole.Admin) 
-            return; 
+        if (user.Role == UserRole.Admin)
+            return;
 
         if (user.Role == UserRole.Attendant && ticket.Sector != user.Sector)
             throw new UnauthorizedAccessException("Você não tem permissão para acessar manifestações deste setor.");
@@ -240,10 +258,10 @@ public class TicketService
         var user = await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.UserID == userId);
-        
+
         if (user == null)
             throw new KeyNotFoundException("Usuário não encontrado.");
-        
+
         return user;
     }
 }
