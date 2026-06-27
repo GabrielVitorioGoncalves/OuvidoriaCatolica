@@ -29,7 +29,6 @@ export function isAuthenticated(): boolean {
 // Retorna o role do usuário logado
 export function getUserRole(): JwtPayload['role'] | null {
   const payload = getTokenPayload();
-  console.log('payload do JWT:', payload);
   return payload?.role ?? null;
 }
 
