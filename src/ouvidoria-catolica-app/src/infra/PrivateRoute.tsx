@@ -36,6 +36,11 @@ export default function PrivateRoute({ children, roles }: PrivateRouteProps) {
   // 2. Role insuficiente → redireciona para a página correta do seu role
   if (roles) {
     const role = getUserRoleFromStorage();
+
+    console.log('role no localStorage:', localStorage.getItem('@Ouvidoria:role'));
+    console.log('role mapeado:', role);
+    console.log('roles permitidos:', roles);
+
     if (!role || !roles.includes(role)) {
       return <Navigate to={getRedirectByRole(role)} replace />;
     }
