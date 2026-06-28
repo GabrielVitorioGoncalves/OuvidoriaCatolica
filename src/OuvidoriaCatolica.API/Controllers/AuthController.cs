@@ -12,9 +12,9 @@ namespace OuvidoriaCatolica.Controllers
     {
         private readonly AuthService _service;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AuthService authService)
         {
-            _service = new AuthService(context, configuration);
+            _service = authService;
         }
 
         [HttpPost("login")]
