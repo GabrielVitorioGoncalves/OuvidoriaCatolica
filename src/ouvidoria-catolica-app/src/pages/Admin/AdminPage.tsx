@@ -1,5 +1,10 @@
 import { useMemo } from "react"
-import { Box, Button, Grid, Stack, Typography, keyframes } from "@mui/material"
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { keyframes } from "@mui/system";
 import {
   PeopleAltOutlined,
   DescriptionOutlined,
@@ -49,14 +54,14 @@ export default function AdminPage() {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#0a0a0a" }}>
       <Header />
-      
-      <Box 
-        sx={{ 
-          maxWidth: 1200, 
-          mx: "auto", 
-          width: "100%", 
-          px: { xs: 2, sm: 4, md: 6 }, 
-          py: { xs: 4, sm: 6 } 
+
+      <Box
+        sx={{
+          maxWidth: 1200,
+          mx: "auto",
+          width: "100%",
+          px: { xs: 2, sm: 4, md: 6 },
+          py: { xs: 4, sm: 6 }
         }}
       >
         <Box
@@ -96,9 +101,10 @@ export default function AdminPage() {
         <Grid
           container
           spacing={3}
-          justifyContent="center"
-          alignItems="stretch"
-          sx={{ mb: 3 }}
+          sx={{
+            justifyContent: "center",
+            alignItems: "stretch",
+          }}
         >
           <Grid
             size={{ xs: 12, sm: 6, lg: 3 }}
@@ -160,8 +166,11 @@ export default function AdminPage() {
         <Grid
           container
           spacing={3}
-          justifyContent="center"
-          alignItems="stretch"
+          sx={{
+            mb: 3,
+            justifyContent: "center",
+            alignItems: "stretch",
+          }}
         >
           <Grid
             size={{ xs: 12, lg: 6 }}
