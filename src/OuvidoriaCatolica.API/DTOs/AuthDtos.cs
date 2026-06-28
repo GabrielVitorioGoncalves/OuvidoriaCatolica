@@ -22,6 +22,6 @@ public class AuthDtos
         public UserRole Role { get; set; }
         public Sector? Sector { get; set; }
         public bool IsActive { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }
