@@ -25,8 +25,8 @@ public class User
     public UserRole Role { get; private set; }
     public Sector? Sector { get; private set; }
     public bool IsActive { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public Guid CreatedBy { get; private set; }
+    public DateTime? CreatedAt { get; private set; }
+    public Guid? CreatedBy { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
 
@@ -46,7 +46,7 @@ public class User
         RegisterUpdate(updatedBy);
     }
 
-    public void ChangePasswordHash(string passwordHash,Guid updatedBy)
+    public void ChangePasswordHash(string passwordHash, Guid updatedBy)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
