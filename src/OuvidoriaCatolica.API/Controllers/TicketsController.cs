@@ -31,6 +31,30 @@ public class TicketsController : ControllerBase
         }
     }
 
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        try
+        {
+            var currentUserId = User.GetUserId();
+            var ticket = await _service.GetTicketByIdAsync(id, currentUserId);
+            return Ok(ticket);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocorreu um erro interno ao buscar o ticket." });
+        }
+    }
+
     [Authorize(Roles = "Common")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)

@@ -199,24 +199,35 @@ public class TicketService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<TicketAPIResponse>> GetTicketsByUserIdAsync(Guid userId)
-    {
-        return await _context.Tickets
-            .Where(t => t.AuthorId == userId)
-            .AsNoTracking()
-            .Select(t => new TicketAPIResponse
-            {
-                TicketID = t.TicketID,
-                Title = t.Title,
-                Description = t.Description,
-                AuthorId = t.AuthorId,
-                Sector = t.Sector.ToString(),
-                Status = t.Status.ToString(),
-                CreatedAt = t.CreatedAt,
-                ClosedAt = t.ClosedAt
-            })
-            .ToListAsync();
-    }
+    public async Task<IEnumerable<TicketListaResponse>> GetTicketsByUserIdAsync(Guid userId)
+{
+    return await _context.Tickets
+        .Where(t => t.AuthorId == userId)
+        .AsNoTracking()
+        .Select(t => new TicketListaResponse
+        {
+            TicketID = t.TicketID,
+            Title = t.Title,
+            Description = t.Description,
+            Sector = (int)t.Sector,
+            Status = (int)t.Status,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.ClosedAt ?? t.CreatedAt,
+            AuthorName = _context.Users
+                .Where(u => u.UserID == t.AuthorId)
+                .Select(u => u.Name)
+                .FirstOrDefault() ?? "Desconhecido",
+            AttendantId = t.AttendantId,
+            AttendantName = t.AttendantId != null
+                ? _context.Users
+                    .Where(u => u.UserID == t.AttendantId)
+                    .Select(u => u.Name)
+                    .FirstOrDefault()
+                : null,
+            IsMyTicket = false
+        })
+        .ToListAsync();
+}
 
     public async Task<IEnumerable<TicketReplyResponse>> GetTicketResponsesAsync(Guid ticketId, Guid currentUserId)
     {
