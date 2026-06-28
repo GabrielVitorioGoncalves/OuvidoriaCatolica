@@ -44,6 +44,7 @@ export interface TicketListaResponse {
   createdAt: string;
   updatedAt: string;
   authorName: string;
+  attendantId?: string;
   attendantName?: string;
   isMyTicket: boolean;
 }
@@ -112,6 +113,11 @@ export class TicketService {
   // POST /api/tickets/{id}/responses — responde ao ticket (Role: Attendant, Admin)
   async responder(id: string, dados: CriarRespostaDTO): Promise<TicketRespostaResponse> {
     return this.http.post<TicketRespostaResponse>(`/tickets/${id}/responses`, dados);
+  }
+
+  // PUT /api/tickets/{id}/assign — assume o ticket (Role: Attendant, Admin)
+  async assumir(id: string): Promise<TicketListaResponse> {
+    return this.http.put<TicketListaResponse>(`/tickets/${id}/assign`, {});
   }
 
   // PUT /api/tickets/{id}/close — fecha o ticket (Role: Attendant, Admin)
