@@ -438,6 +438,7 @@ export default function AttendantPage() {
       ? !t.attendantId
       : t.isMyTicket;
     const matchStatus = filtroStatus === "todos" || t.status === filtroStatus;
+    console.log(`Ticket ${t.ticketID.slice(0, 8)} | attendantId: ${t.attendantId} | isMyTicket: ${t.isMyTicket} | tab: ${tab} | matchTab: ${matchTab}`);
     return matchTab && matchStatus;
   });
 
