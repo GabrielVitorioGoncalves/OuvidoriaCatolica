@@ -291,6 +291,41 @@ public class TicketService
             .ToListAsync();
     }
 
+    public async Task<TicketListaResponse> GetTicketByIdAsync(Guid ticketId, Guid currentUserId)
+{
+    var ticket = await _context.Tickets
+        .AsNoTracking()
+        .FirstOrDefaultAsync(t => t.TicketID == ticketId);
+
+    if (ticket == null)
+        throw new KeyNotFoundException("Ticket não encontrado.");
+
+    await ValidateUserAccessToTicketAsync(ticket, currentUserId);
+
+    return new TicketListaResponse
+    {
+        TicketID = ticket.TicketID,
+        Title = ticket.Title,
+        Description = ticket.Description,
+        Sector = (int)ticket.Sector,
+        Status = (int)ticket.Status,
+        CreatedAt = ticket.CreatedAt,
+        UpdatedAt = ticket.ClosedAt ?? ticket.CreatedAt,
+        AuthorName = await _context.Users
+            .Where(u => u.UserID == ticket.AuthorId)
+            .Select(u => u.Name)
+            .FirstOrDefaultAsync() ?? "Desconhecido",
+        AttendantId = ticket.AttendantId,
+        AttendantName = ticket.AttendantId != null
+            ? await _context.Users
+                .Where(u => u.UserID == ticket.AttendantId)
+                .Select(u => u.Name)
+                .FirstOrDefaultAsync()
+            : null,
+        IsMyTicket = ticket.AttendantId == currentUserId
+    };
+    }
+
     private async Task ValidateUserAccessToTicketAsync(Ticket ticket, Guid currentUserId)
     {
         var user = await GetUserAsync(currentUserId);
