@@ -13,20 +13,31 @@ public class TicketService
         _context = context;
     }
 
-    public async Task<IEnumerable<TicketAPIResponse>> GetAllTicketsAsync()
+    public async Task<IEnumerable<TicketListaResponse>> GetAllTicketsAsync()
     {
         return await _context.Tickets
             .AsNoTracking()
-            .Select(t => new TicketAPIResponse
+            .Select(t => new TicketListaResponse
             {
                 TicketID = t.TicketID,
                 Title = t.Title,
                 Description = t.Description,
-                AuthorId = t.AuthorId,
-                Sector = t.Sector.ToString(),
-                Status = t.Status.ToString(),
+                Sector = (int)t.Sector,
+                Status = (int)t.Status,
                 CreatedAt = t.CreatedAt,
-                ClosedAt = t.ClosedAt
+                UpdatedAt = t.ClosedAt ?? t.CreatedAt,
+                AuthorName = _context.Users
+                    .Where(u => u.UserID == t.AuthorId)
+                    .Select(u => u.Name)
+                    .FirstOrDefault() ?? "Desconhecido",
+                AttendantId = t.AttendantId,
+                AttendantName = t.AttendantId != null
+                    ? _context.Users
+                        .Where(u => u.UserID == t.AttendantId)
+                        .Select(u => u.Name)
+                        .FirstOrDefault()
+                    : null,
+                IsMyTicket = false
             })
             .ToListAsync();
     }
@@ -67,7 +78,7 @@ public class TicketService
         ticket.AssignAttendant(currentUserId);
         ticket.StartTicketReview();
 
-        var history = new TicketHistory(ticketId, currentUserId, ticket.Status, ticket.Status);
+        var history = new TicketHistory(ticketId, currentUserId, TicketStatus.New, TicketStatus.InReview);
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
@@ -106,17 +117,9 @@ public class TicketService
         var response = new TicketResponse(ticketId, currentUserId, request.Message);
         var previousStatus = ticket.Status;
 
-        if (ticket.Status == TicketStatus.New || ticket.Status == TicketStatus.AwaitingResponse)
+        if (ticket.Status == TicketStatus.New)
         {
-            if (ticket.Status == TicketStatus.New)
-                ticket.StartTicketReview();
-            else
-            {
-                // volta para InReview após aluno ter respondido
-                var field = typeof(Ticket).GetProperty("Status");
-                // usamos o método público disponível
-            }
-
+            ticket.StartTicketReview();
             var history = new TicketHistory(ticketId, currentUserId, previousStatus, ticket.Status);
             _context.TicketHistories.Add(history);
             _context.Tickets.Update(ticket);
@@ -200,34 +203,34 @@ public class TicketService
     }
 
     public async Task<IEnumerable<TicketListaResponse>> GetTicketsByUserIdAsync(Guid userId)
-{
-    return await _context.Tickets
-        .Where(t => t.AuthorId == userId)
-        .AsNoTracking()
-        .Select(t => new TicketListaResponse
-        {
-            TicketID = t.TicketID,
-            Title = t.Title,
-            Description = t.Description,
-            Sector = (int)t.Sector,
-            Status = (int)t.Status,
-            CreatedAt = t.CreatedAt,
-            UpdatedAt = t.ClosedAt ?? t.CreatedAt,
-            AuthorName = _context.Users
-                .Where(u => u.UserID == t.AuthorId)
-                .Select(u => u.Name)
-                .FirstOrDefault() ?? "Desconhecido",
-            AttendantId = t.AttendantId,
-            AttendantName = t.AttendantId != null
-                ? _context.Users
-                    .Where(u => u.UserID == t.AttendantId)
+    {
+        return await _context.Tickets
+            .Where(t => t.AuthorId == userId)
+            .AsNoTracking()
+            .Select(t => new TicketListaResponse
+            {
+                TicketID = t.TicketID,
+                Title = t.Title,
+                Description = t.Description,
+                Sector = (int)t.Sector,
+                Status = (int)t.Status,
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.ClosedAt ?? t.CreatedAt,
+                AuthorName = _context.Users
+                    .Where(u => u.UserID == t.AuthorId)
                     .Select(u => u.Name)
-                    .FirstOrDefault()
-                : null,
-            IsMyTicket = false
-        })
-        .ToListAsync();
-}
+                    .FirstOrDefault() ?? "Desconhecido",
+                AttendantId = t.AttendantId,
+                AttendantName = t.AttendantId != null
+                    ? _context.Users
+                        .Where(u => u.UserID == t.AttendantId)
+                        .Select(u => u.Name)
+                        .FirstOrDefault()
+                    : null,
+                IsMyTicket = false
+            })
+            .ToListAsync();
+    }
 
     public async Task<IEnumerable<TicketReplyResponse>> GetTicketResponsesAsync(Guid ticketId, Guid currentUserId)
     {
@@ -292,38 +295,38 @@ public class TicketService
     }
 
     public async Task<TicketListaResponse> GetTicketByIdAsync(Guid ticketId, Guid currentUserId)
-{
-    var ticket = await _context.Tickets
-        .AsNoTracking()
-        .FirstOrDefaultAsync(t => t.TicketID == ticketId);
-
-    if (ticket == null)
-        throw new KeyNotFoundException("Ticket não encontrado.");
-
-    await ValidateUserAccessToTicketAsync(ticket, currentUserId);
-
-    return new TicketListaResponse
     {
-        TicketID = ticket.TicketID,
-        Title = ticket.Title,
-        Description = ticket.Description,
-        Sector = (int)ticket.Sector,
-        Status = (int)ticket.Status,
-        CreatedAt = ticket.CreatedAt,
-        UpdatedAt = ticket.ClosedAt ?? ticket.CreatedAt,
-        AuthorName = await _context.Users
-            .Where(u => u.UserID == ticket.AuthorId)
-            .Select(u => u.Name)
-            .FirstOrDefaultAsync() ?? "Desconhecido",
-        AttendantId = ticket.AttendantId,
-        AttendantName = ticket.AttendantId != null
-            ? await _context.Users
-                .Where(u => u.UserID == ticket.AttendantId)
+        var ticket = await _context.Tickets
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.TicketID == ticketId);
+
+        if (ticket == null)
+            throw new KeyNotFoundException("Ticket não encontrado.");
+
+        await ValidateUserAccessToTicketAsync(ticket, currentUserId);
+
+        return new TicketListaResponse
+        {
+            TicketID = ticket.TicketID,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Sector = (int)ticket.Sector,
+            Status = (int)ticket.Status,
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = ticket.ClosedAt ?? ticket.CreatedAt,
+            AuthorName = await _context.Users
+                .Where(u => u.UserID == ticket.AuthorId)
                 .Select(u => u.Name)
-                .FirstOrDefaultAsync()
-            : null,
-        IsMyTicket = ticket.AttendantId == currentUserId
-    };
+                .FirstOrDefaultAsync() ?? "Desconhecido",
+            AttendantId = ticket.AttendantId,
+            AttendantName = ticket.AttendantId != null
+                ? await _context.Users
+                    .Where(u => u.UserID == ticket.AttendantId)
+                    .Select(u => u.Name)
+                    .FirstOrDefaultAsync()
+                : null,
+            IsMyTicket = ticket.AttendantId == currentUserId
+        };
     }
 
     private async Task ValidateUserAccessToTicketAsync(Ticket ticket, Guid currentUserId)
