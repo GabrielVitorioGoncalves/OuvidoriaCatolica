@@ -129,4 +129,8 @@ export class TicketService {
   async solicitarInformacoes(id: string): Promise<void> {
     return this.http.put<void>(`/tickets/${id}/request-info`, {});
   }
+
+  async buscarPorId(id: string): Promise<TicketListaResponse> {
+  return this.http.get<TicketListaResponse>(`/tickets/${id}`);
+  }
 }

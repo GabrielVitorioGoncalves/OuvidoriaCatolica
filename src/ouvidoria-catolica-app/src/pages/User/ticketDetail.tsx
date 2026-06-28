@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -25,7 +25,6 @@ import {
 } from "../../services/TicketService";
 import { httpClient } from "../../infra/AxiosAdapter";
 
-// ─── Formatadores (C# -> Tela) ────────────────────────────────────────────────
 const formatarSetor = (sectorId: number | undefined) => {
   switch(sectorId) {
     case Sector.GeneralService: return "Serviços Gerais";
@@ -48,10 +47,8 @@ const formatarStatus = (statusId: number | undefined) => {
   }
 };
 
-// ─── Instância do service ─────────────────────────────────────────────────────
 const ticketService = new TicketService(httpClient);
 
-// ─── Mapa de cores por status ─────────────────────────────────────────────────
 const statusStyles: Record<string, { color: string; bg: string }> = {
   "Aberta": { color: "#93c5fd", bg: "rgba(147, 197, 253, 0.15)" },
   "Em Análise": { color: "#fde047", bg: "rgba(253, 224, 71, 0.15)" },
@@ -60,26 +57,13 @@ const statusStyles: Record<string, { color: string; bg: string }> = {
   "Desconhecido": { color: "#cbd5e1", bg: "rgba(203, 213, 225, 0.15)" },
 };
 
-// ─── Subcomponentes ───────────────────────────────────────────────────────────
-function InfoItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <Stack sx={{ direction: "row", spacing: 1.5, alignItems: "flex-start", flex: 1, minWidth: 0 }}>
       <Box sx={{ color: "#6b7280", mt: 0.3, flexShrink: 0 }}>{icon}</Box>
       <Box sx={{ ml: 1.5 }}>
-        <Typography variant="caption" sx={{ color: "#6b7280", display: "block" }}>
-          {label}
-        </Typography>
-        <Typography variant="body1" sx={{ color: "white", fontWeight: 600 }}>
-          {value}
-        </Typography>
+        <Typography variant="caption" sx={{ color: "#6b7280", display: "block" }}>{label}</Typography>
+        <Typography variant="body1" sx={{ color: "white", fontWeight: 600 }}>{value}</Typography>
       </Box>
     </Stack>
   );
@@ -93,60 +77,52 @@ function CardSecao({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Componente principal ─────────────────────────────────────────────────────
 export default function DetalheManifestacao() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  // Dados básicos do ticket vêm via navigation state (já carregados na UserPage)
-  const location = useLocation();
-  const ticketBase = location.state as TicketListaResponse | null;
+
+  const [ticket, setTicket] = useState<TicketListaResponse | null>(null);
   const [respostas, setRespostas] = useState<TicketRespostaResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    ticketService
-      .buscarRespostas(id)
-      .then(setRespostas)
+    Promise.all([
+      ticketService.buscarPorId(id),
+      ticketService.buscarRespostas(id),
+    ])
+      .then(([t, r]) => {
+        setTicket(t);
+        setRespostas(r);
+      })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, [id]);
 
-  const statusFormatado = ticketBase ? formatarStatus(ticketBase.status) : "Desconhecido";
-  const protocoloGerado = ticketBase?.ticketID ? ticketBase.ticketID.substring(0, 8).toUpperCase() : "N/A";
+  const statusFormatado = ticket ? formatarStatus(ticket.status) : "Desconhecido";
+  const protocoloGerado = ticket?.ticketID ? ticket.ticketID.substring(0, 8).toUpperCase() : "N/A";
 
   return (
     <div>
       <Header />
-      <Box
-        sx={{
-          minHeight: "90vh",
-          bgcolor: "#0a0a0a",
-          px: { xs: 2, sm: 4, md: 8, lg: 16 },
-          py: { xs: 3, sm: 5 },
-        }}
-      >
-        {/* Voltar */}
+      <Box sx={{ minHeight: "90vh", bgcolor: "#0a0a0a", px: { xs: 2, sm: 4, md: 8, lg: 16 }, py: { xs: 3, sm: 5 } }}>
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate(-1)}
-          sx={{
-            color: "#9ca3af",
-            textTransform: "none",
-            mb: 3,
-            pl: 0,
-            "&:hover": { bgcolor: "transparent", color: "white" },
-          }}
+          sx={{ color: "#9ca3af", textTransform: "none", mb: 3, pl: 0, "&:hover": { bgcolor: "transparent", color: "white" } }}
         >
           Voltar
         </Button>
 
-        {!ticketBase ? (
-          <Typography sx={{ color: "#f87171" }}>
-            Manifestação não encontrada.
-          </Typography>
+        {loading ? (
+          <Stack spacing={3}>
+            <Skeleton variant="rounded" height={60} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
+            <Skeleton variant="rounded" height={120} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
+            <Skeleton variant="rounded" height={200} sx={{ bgcolor: "#16171d", borderRadius: 3 }} />
+          </Stack>
+        ) : erro || !ticket ? (
+          <Typography sx={{ color: "#f87171" }}>Manifestação não encontrada.</Typography>
         ) : (
           <Stack spacing={3}>
             {/* Cabeçalho */}
@@ -159,19 +135,13 @@ export default function DetalheManifestacao() {
                   sx={{
                     bgcolor: statusStyles[statusFormatado]?.bg || "#333",
                     color: statusStyles[statusFormatado]?.color || "#fff",
-                    px: 1.5,
-                    py: 0.25,
-                    borderRadius: "16px",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
+                    px: 1.5, py: 0.25, borderRadius: "16px", fontSize: "0.75rem", fontWeight: 600,
                   }}
                 >
                   {statusFormatado}
                 </Box>
               </Stack>
-              <Typography variant="h4" sx={{ color: "white", fontWeight: 700 }}>
-                {ticketBase.title}
-              </Typography>
+              <Typography variant="h4" sx={{ color: "white", fontWeight: 700 }}>{ticket.title}</Typography>
             </Box>
 
             {/* Informações gerais */}
@@ -179,90 +149,39 @@ export default function DetalheManifestacao() {
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={{ xs: 2.5, sm: 2 }}
-                divider={
-                  <Divider
-                    orientation="vertical"
-                    flexItem
-                    sx={{ borderColor: "#2e303a", display: { xs: "none", sm: "block" } }}
-                  />
-                }
+                divider={<Divider orientation="vertical" flexItem sx={{ borderColor: "#2e303a", display: { xs: "none", sm: "block" } }} />}
               >
-                <InfoItem
-                  icon={<LocalOfferOutlined fontSize="small" />}
-                  label="Setor"
-                  value={formatarSetor(ticketBase.sector)}
-                />
-                <InfoItem
-                  icon={<CalendarTodayOutlined fontSize="small" />}
-                  label="Última atualização"
-                  value={new Date(ticketBase.createdAt).toLocaleDateString('pt-BR')}
-                />
-                <InfoItem
-                  icon={<PersonOutlined fontSize="small" />}
-                  label="Status"
-                  value={statusFormatado}
-                />
+                <InfoItem icon={<LocalOfferOutlined fontSize="small" />} label="Setor" value={formatarSetor(ticket.sector)} />
+                <InfoItem icon={<CalendarTodayOutlined fontSize="small" />} label="Abertura" value={new Date(ticket.createdAt).toLocaleDateString('pt-BR')} />
+                <InfoItem icon={<PersonOutlined fontSize="small" />} label="Status" value={statusFormatado} />
               </Stack>
+            </CardSecao>
+
+            {/* Descrição */}
+            <CardSecao>
+              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 1.5 }}>Descrição</Typography>
+              <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>{ticket.description}</Typography>
             </CardSecao>
 
             {/* Respostas */}
             <CardSecao>
-              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 2.5 }}>
-                Respostas
-              </Typography>
-
-              {loading ? (
-                <Stack spacing={2}>
-                  {[1, 2].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={80} sx={{ bgcolor: "#1f2028", borderRadius: 2 }} />
-                  ))}
-                </Stack>
-              ) : erro ? (
-                <Typography variant="body2" sx={{ color: "#f87171" }}>
-                  Erro ao carregar respostas. Tente novamente mais tarde.
-                </Typography>
-              ) : respostas.length === 0 ? (
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                  Nenhuma resposta ainda.
-                </Typography>
+              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 600, mb: 2.5 }}>Respostas</Typography>
+              {respostas.length === 0 ? (
+                <Typography variant="body2" sx={{ color: "#6b7280" }}>Nenhuma resposta ainda.</Typography>
               ) : (
                 <Stack spacing={0}>
                   {respostas.map((resposta, index) => (
                     <Box key={resposta.responseID}>
                       <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                        {/* Ícone */}
-                        <Box
-                          sx={{
-                            bgcolor: "#1f2028",
-                            borderRadius: "50%",
-                            width: 36,
-                            height: 36,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                            mt: 0.3,
-                          }}
-                        >
+                        <Box sx={{ bgcolor: "#1f2028", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, mt: 0.3 }}>
                           <SendOutlined sx={{ fontSize: 20, color: "#9ca3af" }} />
                         </Box>
-                        {/* Conteúdo */}
                         <Box sx={{ flex: 1, pb: index < respostas.length - 1 ? 3 : 0 }}>
                           <Typography variant="caption" sx={{ color: "#6b7280" }}>
                             {resposta.responsibleAttendant} · {new Date(resposta.respondedAt).toLocaleDateString('pt-BR')}
                           </Typography>
-                          <Box
-                            sx={{
-                              mt: 1,
-                              p: 2,
-                              bgcolor: "#1f2028",
-                              borderRadius: 2,
-                              border: "1px solid #2e303a",
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>
-                              {resposta.message}
-                            </Typography>
+                          <Box sx={{ mt: 1, p: 2, bgcolor: "#1f2028", borderRadius: 2, border: "1px solid #2e303a" }}>
+                            <Typography variant="body2" sx={{ color: "#9ca3af", lineHeight: 1.7 }}>{resposta.message}</Typography>
                           </Box>
                         </Box>
                       </Stack>
