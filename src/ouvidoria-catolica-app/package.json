@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,7 +14,7 @@
     "test:e2e": "cypress open",
     "test:e2e:headless": "cypress run",
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
