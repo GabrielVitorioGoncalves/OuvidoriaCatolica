@@ -65,6 +65,7 @@ public class TicketService
             throw new UnauthorizedAccessException("Você não pode assumir tickets de outro setor.");
 
         ticket.AssignAttendant(currentUserId);
+        ticket.StartTicketReview();
 
         var history = new TicketHistory(ticketId, currentUserId, ticket.Status, ticket.Status);
         _context.TicketHistories.Add(history);
