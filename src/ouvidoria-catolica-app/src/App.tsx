@@ -1,20 +1,28 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from './login';
+
 import User from './pages/User/userPage';
-import AttendantPage from './pages/Attendant/attendantPage';
 import TicketAdd from './pages/User/ticketAdd';
 import TicketDetail from './pages/User/ticketDetail';
+
+import AttendantPage from './pages/Attendant/attendantPage';
+
+import AdminPage from './pages/Admin/AdminPage';
+import ManageUser from './pages/Admin/ManageUser';
+
 import PrivateRoute from './infra/PrivateRoute';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Pública — qualquer um acessa */}
+
+        {/* Pública */}
         <Route path="/" element={<Login />} />
 
-        {/* Exclusiva do usuário comum (Perfil 1 ou 'Common') */}
+        {/* Usuário */}
         <Route
           path="/user"
           element={
@@ -23,6 +31,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/ticketAdd"
           element={
@@ -31,6 +40,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/ticketDetail/:id"
           element={
@@ -40,7 +50,7 @@ export default function App() {
           }
         />
 
-        {/* Exclusiva do atendente e admin (Perfis 2 e 3) */}
+        {/* Atendente */}
         <Route
           path="/attendant"
           element={
@@ -50,8 +60,28 @@ export default function App() {
           }
         />
 
-        {/* Qualquer rota desconhecida volta para o login */}
+        {/* Administrador */}
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute roles={['Admin']}>
+              <AdminPage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/manageuser"
+          element={
+            <PrivateRoute roles={['Admin']}>
+              <ManageUser />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Rota inexistente */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
     </BrowserRouter>
   );
