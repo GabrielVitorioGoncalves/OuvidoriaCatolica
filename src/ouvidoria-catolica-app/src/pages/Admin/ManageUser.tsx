@@ -667,14 +667,6 @@ export default function ManageUser() {
               {/* Senha só aparece na criação */}
               {!editandoId && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 500, color: "#d1d5db" }}>Senha</label>
-                  <input
-                    type="password"
-                    className="custom-input"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  />
                 </div>
               )}
 

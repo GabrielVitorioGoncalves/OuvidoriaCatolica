@@ -5,6 +5,7 @@ using System.Text;
 using OuvidoriaCatolica.Models;
 using static AuthDtos;
 using Microsoft.EntityFrameworkCore;
+using OuvidoriaCatolica.API.Services;
 
 namespace OuvidoriaCatolica.Services
 {
@@ -12,11 +13,13 @@ namespace OuvidoriaCatolica.Services
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly AuditService _audit;
 
-        public AuthService(AppDbContext context, IConfiguration configuration)
+        public AuthService(AppDbContext context, IConfiguration configuration, AuditService audit)
         {
             _context = context;
             _configuration = configuration;
+            _audit = audit;
         }
 
         public (string Token, User User) Login(string email, string password)
@@ -40,6 +43,8 @@ namespace OuvidoriaCatolica.Services
             }
 
             var token = GenerateJwtToken(user);
+
+            _audit.Log(AuditActions.UserLoggedIn, "Login realizado com sucesso", user.UserID);
 
             return (token, user);
         }
@@ -90,6 +95,8 @@ namespace OuvidoriaCatolica.Services
             
             user.ChangePasswordHash(passwordHash, currentUserId);
             _context.SaveChanges();
+
+            _audit.Log(AuditActions.UserUpdated, $"Criação de senha inicial para o usuário {email}", currentUserId);
         }
 
         public UserLoggedResponse GetLoggedUser(Guid userId)
