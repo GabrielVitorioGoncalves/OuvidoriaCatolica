@@ -1,0 +1,32 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Instalar PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Gerar backup
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          mkdir -p backups
+          pg_dump -h ${{ secrets.DB_HOST }} \
+                  -U postgres \
+                  -d ${{ secrets.DB_NAME }} \
+                  --no-acl --no-owner \
+                  -f backups/backup_$(date +%Y%m%d_%H%M%S).sql
+
+      - name: Salvar backup como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_number }}
+          path: backups/
+          retention-days: 30
