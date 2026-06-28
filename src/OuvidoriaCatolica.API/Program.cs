@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OuvidoriaCatolica.API.Services;
 using OuvidoriaCatolica.API.Services.Interfaces;
+using OuvidoriaCatolica.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,10 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<UserContext>();
+builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOpenApi();
