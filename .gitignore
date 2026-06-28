@@ -6,6 +6,16 @@
 # dotenv files
 .env
 
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress/reports/
+mochawesome-report/
+mochawesome.json
+coverage/
+.nyc_output/
+
 # User-specific files
 *.rsuser
 *.suo
