@@ -19,8 +19,9 @@ jobs:
         run: |
           mkdir -p backups
           pg_dump -h ${{ secrets.DB_HOST }} \
-                  -U postgres \
+                  -U ${{ secrets.DB_USER }} \
                   -d ${{ secrets.DB_NAME }} \
+                  -p 6543 \
                   --no-acl --no-owner \
                   -f backups/backup_$(date +%Y%m%d_%H%M%S).sql
 
