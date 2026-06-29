@@ -8,10 +8,12 @@ namespace OuvidoriaCatolica.API.Services;
 public class UserService : IUserService
 {
     private readonly AppDbContext _context;
+    private readonly AuditService _audit;
 
-    public UserService(AppDbContext context)
+    public UserService(AppDbContext context, AuditService audit)
     {
         _context = context;
+        _audit = audit;
     }
 
     public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
@@ -59,6 +61,12 @@ public class UserService : IUserService
 
         await _context.SaveChangesAsync();
 
+        _audit.Log(
+            AuditActions.UserCreated, 
+            $"Usuário {user.Email} criado com a role {user.Role}.", 
+            currentUserId
+        );
+
         return new UserResponseDto
         {
             UserID = user.UserID,
@@ -86,6 +94,12 @@ public class UserService : IUserService
         );
 
         await _context.SaveChangesAsync();
+
+        _audit.Log(
+            AuditActions.UserUpdated, 
+            $"Dados do usuário {user.Email} foram atualizados.", 
+            currentUserId
+        );
     }
 
     public async Task ChangeStatusAsync(Guid id, bool isActive, Guid currentUserId)
@@ -98,6 +112,15 @@ public class UserService : IUserService
         user.ChangeUserStatus(isActive, currentUserId);
 
         await _context.SaveChangesAsync();
+
+        var action = isActive ? AuditActions.UserUpdated : AuditActions.UserDeactivated;
+        var statusName = isActive ? "Ativado" : "Inativado";
+        
+        _audit.Log(
+            action, 
+            $"Status do usuário {user.Email} alterado para {statusName}.", 
+            currentUserId
+        );
     }
 
     public async Task DeleteAsync(Guid id)
@@ -110,5 +133,10 @@ public class UserService : IUserService
         _context.Users.Remove(user);
 
         await _context.SaveChangesAsync();
+
+        _audit.Log(
+            AuditActions.UserDeactivated, 
+            $"Usuário {user.Email} foi excluído do banco de dados."
+        );
     }
 }
