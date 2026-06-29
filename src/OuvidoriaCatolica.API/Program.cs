@@ -51,6 +51,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<UserContext>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOpenApi();
