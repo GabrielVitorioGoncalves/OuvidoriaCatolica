@@ -11,9 +11,9 @@ public class TicketsController : ControllerBase
 {
     private readonly TicketService _service;
 
-    public TicketsController(AppDbContext context)
+    public TicketsController(TicketService service)
     {
-        _service = new TicketService(context);
+        _service = service;
     }
 
     [Authorize(Roles = "Admin")]
