@@ -7,10 +7,12 @@ namespace OuvidoriaCatolica.API.Services;
 public class TicketService
 {
     private readonly AppDbContext _context;
+    private readonly AuditService _audit;
 
-    public TicketService(AppDbContext context)
+    public TicketService(AppDbContext context, AuditService audit)
     {
         _context = context;
+        _audit = audit;
     }
 
     public async Task<IEnumerable<TicketListaResponse>> GetAllTicketsAsync()
@@ -49,6 +51,12 @@ public class TicketService
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
 
+        _audit.Log(
+            AuditActions.TicketCreated, 
+            $"Ticket {ticket.TicketID} criado com sucesso", 
+            currentUserId
+        );
+
         return new TicketAPIResponse
         {
             TicketID = ticket.TicketID,
@@ -82,6 +90,12 @@ public class TicketService
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
+
+        _audit.Log(
+            AuditActions.TicketStatusChanged, 
+            $"Atendente {user.UserID} assumiu o ticket {ticket.TicketID}", 
+            currentUserId
+        );
 
         return new TicketListaResponse
         {
@@ -128,6 +142,12 @@ public class TicketService
         _context.TicketResponses.Add(response);
         await _context.SaveChangesAsync();
 
+        _audit.Log(
+            AuditActions.ResponseAdded, 
+            $"Nova resposta adicionada ao ticket {ticketId}", 
+            currentUserId
+        );
+
         var attendantName = await _context.Users
             .Where(u => u.UserID == currentUserId)
             .Select(u => u.Name)
@@ -158,6 +178,12 @@ public class TicketService
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
+
+        _audit.Log(
+            AuditActions.TicketStatusChanged, 
+            $"Status do ticket {ticketId} alterado para Aguardando Informação.", 
+            currentUserId
+        );
     }
 
     public async Task CloseTicketAsync(Guid ticketId, Guid currentUserId)
@@ -176,6 +202,12 @@ public class TicketService
         _context.TicketHistories.Add(history);
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
+
+        _audit.Log(
+            AuditActions.TicketStatusChanged, 
+            $"Ticket {ticketId} foi encerrado.", 
+            currentUserId
+        );
     }
 
     public async Task<IEnumerable<TicketHistoryResponse>> GetTicketHistoryAsync(Guid ticketId, Guid currentUserId)
